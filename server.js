@@ -114,6 +114,37 @@ app.post('/login',async (req,res)=>{
 
 });
 
+app.post('/login',async (req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    const result=await userdata.find({id:req.body.id}).toArray();
+    if(result.length>0)
+    {
+      //login succeed
+      res.json("true");
+    }
+    else
+    //login false
+      res.json("false");
+  }
+  finally
+  {
+    client.close();
+  }
+
+});
+
+app.get('/ranking/:id',async (req,res)=>{
+    if(req.params.id=="1")
+      result=await GetFromMusinsa("https://www.musinsa.com/categories/item/001001");
+    else
+      result=await GetFromStyleNanda("https://stylenanda.com/product/list.html?cate_no=4259");
+  res.send(result);
+
+});
+
+
 server.listen(4444,main);
 
 
@@ -139,37 +170,40 @@ function main() {
 
 }
 
-async function Musinsa()
+async function GetFromMusinsa(url) //"https://www.musinsa.com/categories/item/001001"
 {
-  const html=await axios.get("https://www.musinsa.com/categories/item/018");
+  let res=[]
+  const html=await axios.get(url);
 
   const $=cheerio.load(html.data)
   const clothes=$(".li_box")
   clothes.map((i,element)=>{
-    console.log($(element).find(".item_title").text())//브랜드
-    console.log($(element).find(".txt_price_member").text())//가격
-    console.log($(element).find(".img-block").attr("title"))//상품명
-    console.log($(element).find(".img-block").attr("href"))//상품링크
-    console.log($(element).find("img").attr("data-original"))//이미지
-    console.log("---------------------------------------------------------")
+    res[i]={
+      name:$(element).find(".img-block").attr("title"),
+      price:$(element).find(".txt_price_member").text(),
+      img:$(element).find("img").attr("data-original")
+    };
+    //console.log($(element).find(".item_title").text())//브랜드
+    //console.log($(element).find(".img-block").attr("href"))//상품링크
   });
+  return res
 }
 
-async function Another()
+async function GetFromStyleNanda(url) //"https://stylenanda.com/product/list.html?cate_no=4259"
 {
-  const html=await axios.get("https://www.musinsa.com/categories/item/018");
-
+  let res=[]
+  const html=await axios.get(url);
   const $=cheerio.load(html.data)
-  const clothes=$(".li_box")
+  const clothes=$(".column4").find("li")
   clothes.map((i,element)=>{
-    console.log($(element).find(".item_title").text())//브랜드
-    console.log($(element).find(".txt_price_member").text())//가격
-    console.log($(element).find(".img-block").attr("title"))//상품명
-    console.log($(element).find(".img-block").attr("href"))//상품링크
-    console.log($(element).find("img").attr("data-original"))//이미지
-    console.log("---------------------------------------------------------")
+    sale=$(element).find(".table").find("span").filter((i,el)=>{return $(el).attr("class")!="price";}).text()
+    res[i]={
+        name:$(element).find(".name").find("a").text().split(':')[1].trim(),
+        price:(sale!="")?sale:$(element).find(".price").text(),
+        img:"https:"+$(element).find(".thumb").find("a").find("img").attr("src")
+    };
+    //console.log("https://stylenanda.com"+$(element).find(".name").find("a").attr("href"))//상품링크
   });
+  return res
 }
-//Musinsa()
-
 

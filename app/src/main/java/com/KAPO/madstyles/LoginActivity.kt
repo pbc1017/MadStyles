@@ -3,6 +3,7 @@ package com.KAPO.madstyles
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.MediaStore.Audio.Media
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,7 +15,11 @@ import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.KAPO.madstyles.databinding.ActivityLoginBinding
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.IOException
 
 class LoginActivity : AppCompatActivity() {
 
@@ -40,8 +45,8 @@ class LoginActivity : AppCompatActivity() {
             binding.inputPw.text.clear()
 
             val permission = Manifest.permission.INTERNET
-            val result = ContextCompat.checkSelfPermission(this, permission)
-            if (result == PackageManager.PERMISSION_GRANTED) {
+
+            if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
                 sendLoginRequest(id, pw)
             } else {
                 requestPermission()
@@ -53,8 +58,26 @@ class LoginActivity : AppCompatActivity() {
 
     private fun sendLoginRequest(id: String, pw: String) {
         // Assuming your server accepts POST request for login with params "username" and "password"
-        val url = "http://172.10.5.149/login"
+        val url = "http://143.248.193.204:4444/login"
+        val okHttpClient= OkHttpClient()
+        val JSONobj=JSONObject()
+        JSONobj.put("id",id)
+        JSONobj.put("password",pw)
+        val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
+        val req=okhttp3.Request.Builder().url(url).post(body).build()
+        okHttpClient.newCall(req).enqueue(object:Callback{
+            override fun onFailure(call: Call, e: IOException) {
+                Log.d("ERROR",e.message.toString())
+            }
 
+            override fun onResponse(call: Call, response: okhttp3.Response) {
+                Log.d("Result",response.body!!.string())
+            }
+
+        })
+
+
+        /*
         val params = HashMap<String,String>()
         params["id"] = id
         params["password"] = pw
@@ -94,5 +117,6 @@ class LoginActivity : AppCompatActivity() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(stringRequest)
+        */
     }
 }

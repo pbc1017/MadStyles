@@ -33,8 +33,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private var initTime = 0L
-    private var id: String? = ""
+    var id: String? = ""
 
+    fun getID(): String {
+        return id.toString()
+    }
 
     // 뷰 페이저 어댑터
     class MyFragmentPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
@@ -62,15 +65,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    private fun sendIdRequest(id: String) {
-        val JSONobj= JSONObject()
-        JSONobj.put("id",id)
-        serverCommu.sendRequest(JSONobj, "requestmain", {result ->
-            Log.d("Result","${result}")
-        }, {result ->
-            Log.d("Result","${result}")
-        })
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -92,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         if(requestCode == 10 && resultCode === Activity.RESULT_OK) {
             id = data?.getStringExtra("id")
         }
-        id?.let { sendIdRequest(it) }
     }
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if(keyCode == KeyEvent.KEYCODE_BACK){

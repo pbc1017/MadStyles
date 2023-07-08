@@ -22,6 +22,7 @@ class serverCommu {
                 }
                 override fun onResponse(call: Call, response: okhttp3.Response) {
                     val result = response.body!!.string().removeSurrounding("\"")
+                    Log.d("server",result)
                     onResponse(result)
                 }
             })

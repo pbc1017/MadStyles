@@ -21,7 +21,11 @@ private const val ARG_PARAM2 = "param2"
 class OneFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private lateinit var binding: FragmentOneBinding
+    private var id: String = ""
 
+    fun initID(mainId: String) {
+        id = mainId
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = FragmentOneBinding.inflate(layoutInflater)

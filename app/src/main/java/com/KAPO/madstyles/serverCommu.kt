@@ -13,8 +13,7 @@ class serverCommu {
     companion object {
 
         fun sendRequest(JSONobj: JSONObject, api: String, onResponse: (String) -> Unit, onFailure: (String) -> Unit) {
-            //143.248.193.204
-            val url = "http://143.248.193.204:80/${api}"
+            val url = "http://143.248.226.14:80/${api}"
             val okHttpClient= OkHttpClient()
             val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
             val req=okhttp3.Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","123").post(body).build()

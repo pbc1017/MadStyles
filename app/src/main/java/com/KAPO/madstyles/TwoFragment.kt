@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.concurrent.thread
@@ -43,6 +44,9 @@ class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<I
         holder.name.text = item.name
         holder.brand.text = item.brand
         holder.price.text = item.price.toString()
+        Glide.with(holder.image.context)
+            .load(item.imgUrl)
+            .into(holder.image)
 
         // To load image from URL, you may need a library like Picasso or Glide
         // Here is an example with Picasso:

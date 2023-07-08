@@ -24,11 +24,11 @@ data class Item(
     val name: String,
     val brand: String,
     val price: Double,
-    val imageUrl: String,
+    val imgUrl: String,
     val rank:String
 )
 
-class ItemAdapter(private val items: List<Item>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.item_name)
@@ -70,6 +70,8 @@ class TwoFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_two, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
+        itemAdapter = ItemAdapter(items)
+        recyclerView.adapter = itemAdapter
         return view
     }
     private fun sendIdRequest(id: String) {
@@ -89,12 +91,11 @@ class TwoFragment : Fragment() {
                         name = jsonObj.getString("name"),
                         brand = jsonObj.getString("brand"),
                         price = jsonObj.getDouble("price"),
-                        imageUrl = jsonObj.getString("imageurl"),
+                        imgUrl = jsonObj.getString("imgUrl"),
                         rank = jsonObj.getString("rank")
                     )
                 )
             }
-
         }, {result ->
             Log.d("Result","${result}")
         })
@@ -106,10 +107,10 @@ class TwoFragment : Fragment() {
         thread(start=true)
         {
             sendIdRequest(id)
-
+            itemAdapter.notifyDataSetChanged()
             requireActivity().runOnUiThread{
-                itemAdapter = ItemAdapter(items)
-                recyclerView.adapter = itemAdapter
+
+
             }
         }
 

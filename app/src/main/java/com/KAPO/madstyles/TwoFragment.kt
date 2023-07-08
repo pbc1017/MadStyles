@@ -101,22 +101,6 @@ class TwoFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val id = (activity as MainActivity).getID()
         sendIdRequest(id)
-        Log.d("RESULT","${json}")
-        val jsonArray = JSONArray(json)
-        val items = mutableListOf<Item>()
-
-        for (i in 0 until jsonArray.length()) {
-            val jsonObj = jsonArray.getJSONObject(i)
-            items.add(
-                Item(
-                    id = jsonObj.getString("id"),
-                    name = jsonObj.getString("name"),
-                    brand = jsonObj.getString("brand"),
-                    price = jsonObj.getDouble("price"),
-                    imageUrl = jsonObj.getString("imageurl")
-                )
-            )
-        }
 
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter

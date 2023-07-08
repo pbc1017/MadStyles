@@ -11,6 +11,7 @@ import java.io.IOException
 
 class serverCommu {
     companion object {
+
         fun sendRequest(JSONobj: JSONObject, api: String, onResponse: (String) -> Unit, onFailure: (String) -> Unit) {
             val url = "https://4b08-192-249-19-234.ngrok-free.app/${api}"
             val okHttpClient= OkHttpClient()

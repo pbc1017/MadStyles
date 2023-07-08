@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.concurrent.thread
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -23,7 +24,8 @@ data class Item(
     val name: String,
     val brand: String,
     val price: Double,
-    val imageUrl: String
+    val imageUrl: String,
+    val rank:String
 )
 
 class ItemAdapter(private val items: List<Item>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
@@ -87,7 +89,8 @@ class TwoFragment : Fragment() {
                         name = jsonObj.getString("name"),
                         brand = jsonObj.getString("brand"),
                         price = jsonObj.getDouble("price"),
-                        imageUrl = jsonObj.getString("imageurl")
+                        imageUrl = jsonObj.getString("imageurl"),
+                        rank = jsonObj.getString("rank")
                     )
                 )
             }
@@ -100,9 +103,17 @@ class TwoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val id = (activity as MainActivity).getID()
-        sendIdRequest(id)
+        thread(start=true)
+        {
+            sendIdRequest(id)
 
-        itemAdapter = ItemAdapter(items)
-        recyclerView.adapter = itemAdapter
+            requireActivity().runOnUiThread{
+                itemAdapter = ItemAdapter(items)
+                recyclerView.adapter = itemAdapter
+            }
+        }
+
+
+
     }
 }

@@ -41,7 +41,9 @@ class MainActivity : AppCompatActivity() {
 
     // 뷰 페이저 어댑터
     class MyFragmentPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
-        val fragments = listOf(OneFragment(), TwoFragment(), ThreeFragment(), FourFragment(), FiveFragment())
+        val fragments =
+            listOf(OneFragment(), TwoFragment(), ThreeFragment(), FourFragment(), FiveFragment())
+
         override fun getItemCount(): Int = fragments.size
         override fun createFragment(position: Int): Fragment = fragments[position]
     }
@@ -65,30 +67,32 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //TODO: 자동로그인 여부 확인
         val intent = Intent(this, LoginActivity::class.java)
-        startActivityForResult(intent,10)
+        startActivityForResult(intent, 10)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.viewpager.adapter = MyFragmentPagerAdapter(this)
 
-        TabLayoutMediator(binding.tabs,binding.viewpager){
-                tab, position-> tabSetting(tab, position)
+        TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
+            tabSetting(tab, position)
         }.attach()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 10 && resultCode === Activity.RESULT_OK) {
+        if (requestCode == 10 && resultCode === Activity.RESULT_OK) {
             id = data?.getStringExtra("id")
         }
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
 //            val fragment = (binding.viewpager.adapter as MyFragmentPagerAdapter).fragments[binding.viewpager.currentItem]
 //            if (fragment is OneFragment) {
 //                if(fragment.backButtonPressed()==1) return true
@@ -96,18 +100,22 @@ class MainActivity : AppCompatActivity() {
 //            else if (fragment is TwoFragment) {
 //                if(fragment.backButtonPressed()==1) return true
 //            }
-            if(System.currentTimeMillis() - initTime > 3000){
-                Toast.makeText(this, "종료하려면 한번 더 누르세요!",
-                    Toast.LENGTH_SHORT).show()
+            if (System.currentTimeMillis() - initTime > 3000) {
+                Toast.makeText(
+                    this, "종료하려면 한번 더 누르세요!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 initTime = System.currentTimeMillis()
                 return true // 키 이벤트 무시
-            }
-            else
-            {
+            } else {
                 ActivityCompat.finishAffinity(this)
                 System.exit(0)
             }
         }
         return super.onKeyDown(keyCode, event) // 키 이벤트 처리
+    }
+
+    override fun onBackPressed() {
+
     }
 }

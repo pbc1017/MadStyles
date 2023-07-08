@@ -21,6 +21,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import kotlin.concurrent.thread
 
 class LoginActivity : AppCompatActivity() {
 
@@ -39,8 +40,10 @@ class LoginActivity : AppCompatActivity() {
             // Clear the inputs
             binding.inputId.text.clear()
             binding.inputPw.text.clear()
+            thread(start=true){
+                sendLoginRequest(id, pw)
+            }
 
-            sendLoginRequest(id, pw)
         }
     }
     private fun sendLoginRequest(id: String, pw: String) {
@@ -54,10 +57,14 @@ class LoginActivity : AppCompatActivity() {
                 setResult(RESULT_OK, intent)
                 finish()
             } else {
-//                Toast.makeText(this,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()
+               this.runOnUiThread{Toast.makeText(this,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()}
             }
         }, {result ->
             Log.d("Result","${result}")
         })
+    }
+
+    override fun onBackPressed() {
+
     }
 }

@@ -135,9 +135,11 @@ app.post('/login',async (req,res)=>{
 
 });
 
-app.get('/ranking/:id',async (req,res)=>{
-    if(req.params.id=="1")
-      result=await GetFromMusinsa("https://www.musinsa.com/categories/item/001001");
+app.get('/ranking/:name/:id',async (req,res)=>{
+    if(req.params.name=="musinsa")
+      //result=await GetFromMusinsa("https://www.musinsa.com/categories/item/"+req.params.id);//추천
+      result=await GetFromMusinsa("https://www.musinsa.com/ranking/best?period=month&viewType=large&mainCategory="+req.params.id);
+      //
     else
       result=await GetFromStyleNanda("https://stylenanda.com/product/list.html?cate_no=4259");
   res.send(result);
@@ -145,7 +147,7 @@ app.get('/ranking/:id',async (req,res)=>{
 });
 
 
-server.listen(4444,main);
+server.listen(80,main);
 
 
 //DB CODE
@@ -165,7 +167,7 @@ function main() {
 
     // Connect the client to the server	(optional starting in v4.7)
     //.toArray()
-    //await collection.updateOne({QUERYDATA},{$set:{CHANGEDATA}})
+    //await collection.updateOne(QUERYDATA},{$set:{CHANGEDATA}})
     console.log("Server On");
 
 }
@@ -179,7 +181,8 @@ async function GetFromMusinsa(url) //"https://www.musinsa.com/categories/item/00
   const clothes=$(".li_box")
   clothes.map((i,element)=>{
     res[i]={
-      name:$(element).find(".img-block").attr("title"),
+      //name:$(element).find(".img-block").attr("title"),
+      name:$(element).find(".list_info").find("a").attr("title"),
       price:$(element).find(".txt_price_member").text(),
       img:$(element).find("img").attr("data-original")
     };

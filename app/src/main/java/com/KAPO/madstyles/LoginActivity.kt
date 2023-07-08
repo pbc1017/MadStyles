@@ -43,33 +43,21 @@ class LoginActivity : AppCompatActivity() {
             sendLoginRequest(id, pw)
         }
     }
-
     private fun sendLoginRequest(id: String, pw: String) {
-        // Assuming your server accepts POST request for login with params "username" and "password"
-        val url = "http://143.248.193.204:4444/login"
-        val okHttpClient= OkHttpClient()
         val JSONobj=JSONObject()
         JSONobj.put("id",id)
         JSONobj.put("password",pw)
-        val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
-        val req=okhttp3.Request.Builder().url(url).post(body).build()
-        okHttpClient.newCall(req).enqueue(object:Callback{
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("ERROR",e.message.toString())
+        serverCommu.sendRequest(JSONobj, "login", {result ->
+            Log.d("Result","${result}")
+            if (result == "true") {
+                intent.putExtra("id",id)
+                setResult(RESULT_OK, intent)
+                finish()
+            } else {
+//                Toast.makeText(this,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()
             }
-
-            override fun onResponse(call: Call, response: okhttp3.Response) {
-                val result = response.body!!.string().removeSurrounding("\"")
-                Log.d("Result","${result}")
-                if (result == "true") {
-                    intent.putExtra("id",id)
-                    setResult(RESULT_OK, intent)
-                    finish()
-                } else {
-//                    Toast.makeText(this@LoginActivity,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()
-                }
-            }
-
+        }, {result ->
+            Log.d("Result","${result}")
         })
     }
 }

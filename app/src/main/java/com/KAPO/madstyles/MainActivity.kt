@@ -18,6 +18,7 @@ import com.KAPO.madstyles.R
 import com.KAPO.madstyles.ThreeFragment
 import com.KAPO.madstyles.TwoFragment
 import com.KAPO.madstyles.databinding.ActivityMainBinding
+import com.KAPO.madstyles.serverCommu
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import okhttp3.Call
@@ -44,47 +45,30 @@ class MainActivity : AppCompatActivity() {
 
     fun tabSetting(tab: TabLayout.Tab, position: Int) {
         if (position == 0) {
-            tab.text = "tab1"
+            tab.text = "Home"
 //            tab.setIcon(R.drawable.contacts_icon)
         } else if (position == 1) {
-            tab.text = "tab2"
+            tab.text = "Lank"
 //            tab.setIcon(R.drawable.gallery_icon)
         } else if (position == 2) {
-            tab.text = "tab3"
+            tab.text = "Search"
 //            tab.setIcon(R.drawable.gallery_icon)
         } else if (position == 3) {
-            tab.text = "tab4"
+            tab.text = "Cart"
 //            tab.setIcon(R.drawable.gallery_icon)
         } else {
-            tab.text = "tab5"
+            tab.text = "My"
 //            tab.setIcon(R.drawable.gpt_icon)
         }
 
     }
     private fun sendIdRequest(id: String) {
-        // Assuming your server accepts POST request for login with params "username" and "password"
-        val url = "http://143.248.193.204:4444/requestmain"
-        val okHttpClient= OkHttpClient()
         val JSONobj= JSONObject()
         JSONobj.put("id",id)
-        val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
-        val req=okhttp3.Request.Builder().url(url).post(body).build()
-        okHttpClient.newCall(req).enqueue(object: Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.d("ERROR",e.message.toString())
-            }
-            override fun onResponse(call: Call, response: okhttp3.Response) {
-                val result = response.body!!.string().removeSurrounding("\"")
-                Log.d("Result","${result}")
-//                if (result == "true") {
-//                    intent.putExtra("id",id)
-//                    setResult(RESULT_OK, intent)
-//                    finish()
-//                } else {
-//                    Toast.makeText(this@LoginActivity,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()
-//                }
-            }
-
+        serverCommu.sendRequest(JSONobj, "requestmain", {result ->
+            Log.d("Result","${result}")
+        }, {result ->
+            Log.d("Result","${result}")
         })
     }
     override fun onCreate(savedInstanceState: Bundle?) {

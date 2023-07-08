@@ -74,7 +74,21 @@ app.post('/requestmain',async (req,res)=>{
     client.close();
     
   }
-   
+});
+
+app.post('/requestmain',async (req,res)=>{
+  try{
+    await client.connect();
+    const user=await client.db('Users').collection('person').find(req.body).toArray();
+    fashiondata=client.db('Fashion').collection('Clothes');
+    const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
+    res.json(result);
+  }
+  finally
+  {
+    client.close();
+    
+  }
 });
 
 app.post('/changeinfo',async (req,res)=>{
@@ -91,27 +105,6 @@ app.post('/changeinfo',async (req,res)=>{
     
   }
    
-});
-
-app.post('/login',async (req,res)=>{
-  try{
-    await client.connect();
-    userdata=client.db('Users').collection('person');
-    const result=await userdata.find({id:req.body.id}).toArray();
-    if(result.length>0)
-    {
-      //login succeed
-      res.json("true");
-    }
-    else
-    //login false
-      res.json("false");
-  }
-  finally
-  {
-    client.close();
-  }
-
 });
 
 app.post('/login',async (req,res)=>{

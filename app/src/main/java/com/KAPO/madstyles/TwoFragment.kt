@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
@@ -64,7 +65,7 @@ class TwoFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_two, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = GridLayoutManager(context, 2)
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter
         return view
@@ -106,8 +107,5 @@ class TwoFragment : Fragment() {
         {
             sendIdRequest(id)
         }
-
-
-
     }
 }

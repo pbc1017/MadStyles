@@ -106,7 +106,7 @@ app.post('/login',async (req,res)=>{
     const result=await userdata.find(req.body).toArray();
     if(result.length>0)
     {
-      //login succeed
+      //return user info
       res.json(result[0]);
     }
     else

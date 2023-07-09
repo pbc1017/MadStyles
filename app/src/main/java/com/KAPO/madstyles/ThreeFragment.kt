@@ -30,20 +30,11 @@ class ThreeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_three, container, false)
-        recyclerView = view.findViewById(R.id.recycler_view_ranking)
+        recyclerView = view.findViewById(R.id.recycler_view_search)
         recyclerView.layoutManager = GridLayoutManager(context, 2)
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter
-        val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
-        btnrank.setOnClickListener {
-            val id = (activity as MainActivity).getID()
-            btnrank.text=genderchange(btnrank.text.toString())
-            //var gender=(activity as MainActivity).getgender()
-            thread(start=true)
-            {
-//                requestRanking(id,btnrank.text.toString())
-            }
-        }
+
         return view
     }
     val similarityMap = mapOf(
@@ -105,16 +96,10 @@ class ThreeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val id = (activity as MainActivity).getID()
         val gender=(activity as MainActivity).getgender()
-        view.findViewById<Button>(R.id.btngendertoggle).text=gender
-        thread(start=true)
-        {
+//        view.findViewById<Button>(R.id.btngendertoggle).text=gender
+//        thread(start=true)
+//        {
 //            requestRanking(id,gender)
-        }
-    }
-    fun genderchange(gender:String):String{
-        if (gender=="남자")
-            return "여자"
-        else
-            return "남자"
+//        }
     }
 }

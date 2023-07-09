@@ -3,7 +3,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const express=require('express');
 const axios=require("axios");
 const cheerio=require("cheerio");
-const prompt=require('prompt-sync')({singint:true});
+// const prompt=require('prompt-sync')({singint:true});
 
 var app=express();
 var server=require('http').createServer(app);

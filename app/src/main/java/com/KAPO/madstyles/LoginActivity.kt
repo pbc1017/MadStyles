@@ -19,6 +19,7 @@ import com.KAPO.madstyles.databinding.ActivityLoginBinding
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import kotlin.concurrent.thread
@@ -46,11 +47,13 @@ class LoginActivity : AppCompatActivity() {
 
         }
     }
+
     private fun sendLoginRequest(id: String, pw: String) {
         val JSONobj=JSONObject()
         JSONobj.put("id",id)
         JSONobj.put("password",pw)
         serverCommu.sendRequest(JSONobj, "login", {result ->
+            Log.d("Result",result.toString())
             //Log.d("Result","${result}")
             if (result != "false") {
                 val infotest=JSONObject(result)

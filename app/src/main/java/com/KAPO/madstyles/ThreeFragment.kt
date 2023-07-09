@@ -1,59 +1,120 @@
 package com.KAPO.madstyles
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import org.json.JSONArray
+import org.json.JSONObject
+import kotlin.concurrent.thread
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ThreeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ThreeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var itemAdapter: ItemAdapter
+    val items = mutableListOf<Item>()
+    var json: String=""
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_three, container, false)
+        val view = inflater.inflate(R.layout.fragment_three, container, false)
+        recyclerView = view.findViewById(R.id.recycler_view_ranking)
+        recyclerView.layoutManager = GridLayoutManager(context, 2)
+        itemAdapter = ItemAdapter(items)
+        recyclerView.adapter = itemAdapter
+        val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
+        btnrank.setOnClickListener {
+            val id = (activity as MainActivity).getID()
+            btnrank.text=genderchange(btnrank.text.toString())
+            //var gender=(activity as MainActivity).getgender()
+            thread(start=true)
+            {
+//                requestRanking(id,btnrank.text.toString())
+            }
+        }
+        return view
     }
+    val similarityMap = mapOf(
+        "검은색" to "검정",
+        "검은" to "검정",
+        "검정색" to "검정"
+        //... add other similar words
+    )
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ThreeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ThreeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    val fieldsValues = mapOf(
+        "gender" to listOf("전체","남자","여자"),
+        "kind" to listOf("전체","상의","바지","아우터","신발","가방","모자"),
+        "color" to listOf("전체","검정", "흰", "빨강", "파랑", "노랑", "초록"),
+        "pRange" to listOf("전체","High", "Mid", "Low")
+    )
+
+    val sorts = listOf("인기순", "낮은 가격순", "높은 가격순")
+
+    fun sendSearchRequest(inputText: String, filter: Map<String, List<String>>, sort: String):String {
+        val words = inputText.split(" ").toMutableList()
+        val query = JSONObject()
+        val wordsCopy = ArrayList(words)
+        for (word in wordsCopy) {
+            val realWord = similarityMap[word] ?: word
+            for ((field, values) in fieldsValues) {
+                if (values.contains(realWord)) {
+                    val array = query.optJSONArray(field) ?: JSONArray()
+                    array.put(realWord)
+                    query.put(field, array)
+                    words.remove(word)
+                    break
                 }
             }
+        }
+        val remainingWords = words.joinToString(" ")
+        query.put("brand", remainingWords)
+        query.put("name", remainingWords)
+
+        for ((field, values) in filter) {
+            if (values.contains("전체")) continue
+            val array = query.optJSONArray(field) ?: JSONArray()
+            for (value in values) {
+                array.put(value)
+            }
+            query.put(field, array)
+        }
+
+        when (sort) {
+            "인기순" -> query.put("sort", JSONArray().put("rank down"))
+            "낮은 가격순" -> query.put("sort", JSONArray().put("price up"))
+            "높은 가격순" -> query.put("sort", JSONArray().put("price down"))
+        }
+
+        return query.toString()
+        // use the returned items to update your RecyclerView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val id = (activity as MainActivity).getID()
+        val gender=(activity as MainActivity).getgender()
+        view.findViewById<Button>(R.id.btngendertoggle).text=gender
+        thread(start=true)
+        {
+//            requestRanking(id,gender)
+        }
+    }
+    fun genderchange(gender:String):String{
+        if (gender=="남자")
+            return "여자"
+        else
+            return "남자"
     }
 }

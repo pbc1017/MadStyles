@@ -32,8 +32,8 @@ data class Item(
     val rank:Int
 )
 
-class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
-
+class ItemAdapter(private val items: MutableList<Item>,index:Int=2) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+    val index=index
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val rank:TextView=itemView.findViewById(R.id.item_rank)
         val name: TextView = itemView.findViewById(R.id.item_name)
@@ -56,7 +56,13 @@ class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<I
         Glide.with(holder.image.context)
             .load(item.imgUrl)
             .into(holder.image)
-
+        if(index==1)
+        {
+            val lp=holder.itemView.layoutParams
+            lp.width=500
+            lp.height=1000
+            holder.rank.visibility=View.GONE
+        }
         // To load image from URL, you may need a library like Picasso or Glide
         // Here is an example with Picasso:
         // Picasso.get().load(item.imageUrl).into(holder.image)

@@ -7,11 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.KAPO.madstyles.databinding.FragmentOneBinding
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.concurrent.thread
+
+
 
 class OneFragment : Fragment() {
     private lateinit var binding: FragmentOneBinding
@@ -36,13 +39,12 @@ class OneFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding= FragmentOneBinding.bind(view)
         binding.txtrecommend1.text="${(activity as MainActivity).getID()}에게 추천하는 아이템"
-        itemAdapter= ItemAdapter(items)
+        itemAdapter= ItemAdapter(items,1)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter
+        val linmanager=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+        view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager
         val id = (activity as MainActivity).getID()
-        thread(start=true)
-        {
-            Requestrecommend(id)
-        }
+        Requestrecommend(id)
 
 
     }
@@ -50,32 +52,36 @@ class OneFragment : Fragment() {
     private fun Requestrecommend(id:String) {
         val QueryObj= JSONObject()
         QueryObj.put("id",id)
-        serverCommu.sendRequest(QueryObj, "recommend", {result ->
-            json = result
-            Log.d("RECOMMEND","${json}")
-            items.clear()
-            val jsonArray = JSONArray(json)
+        thread(start=true)
+        {
+            serverCommu.sendRequest(QueryObj, "recommend", {result ->
+                json = result
+                Log.d("RECOMMEND","${json}")
+                items.clear()
+                val jsonArray = JSONArray(json)
 
-            for (i in 0 until jsonArray.length()) {
-                val jsonObj = jsonArray.getJSONObject(i)
-                items.add(
-                    Item(
-                        id = jsonObj.getInt("id"),
-                        name = jsonObj.getString("name"),
-                        brand = jsonObj.getString("brand"),
-                        price = jsonObj.getInt("price"),
-                        imgUrl = jsonObj.getString("imageUrl"),
-                        color=jsonObj.getString("color"),
-                        rank=jsonObj.getInt("rank")
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObj = jsonArray.getJSONObject(i)
+                    items.add(
+                        Item(
+                            id = jsonObj.getInt("id"),
+                            name = jsonObj.getString("name"),
+                            brand = jsonObj.getString("brand"),
+                            price = jsonObj.getInt("price"),
+                            imgUrl = jsonObj.getString("imageUrl"),
+                            color=jsonObj.getString("color"),
+                            rank=jsonObj.getInt("rank")
+                        )
                     )
-                )
-            }
-            requireActivity().runOnUiThread{
-                itemAdapter.notifyDataSetChanged()
-            }
-        }, {result ->
-            Log.d("Result","${result}")
-        })
+                }
+                requireActivity().runOnUiThread{
+                    itemAdapter.notifyDataSetChanged()
+                }
+            }, {result ->
+                Log.d("Result","${result}")
+            })
+        }
+
     }
 
 }

@@ -52,27 +52,27 @@ app.post('/addfashion',async (req,res)=>{
    
 });
 
-app.post('/ranking',async (req,res)=>{
-  try{
-    await client.connect();
-    const user=await client.db('Users').collection('person').find(req.body).toArray();
-    fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(20).toArray();
-    res.json(result);
-  }
-  finally
-  {
-    client.close();
+// app.post('/ranking',async (req,res)=>{
+//   try{
+//     await client.connect();
+//     const user=await client.db('Users').collection('person').find(req.body).toArray();
+//     fashiondata=client.db('Fashion').collection('Clothes');
+//     const result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(20).toArray();
+//     res.json(result);
+//   }
+//   finally
+//   {
+//     client.close();
     
-  }
-});
+//   }
+// });
 
 app.post('/ranking/:gender',async (req,res)=>{
   try{
     await client.connect();
-    const user=await client.db('Users').collection('person').find(req.body).toArray();
+    //const user=await client.db('Users').collection('person').find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({gender:req.body.gender}).sort({"rank":-1}).limit(20).toArray();
+    const result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).limit(20).toArray();
     res.json(result);
   }
   finally
@@ -107,7 +107,7 @@ app.post('/login',async (req,res)=>{
     if(result.length>0)
     {
       //login succeed
-      res.json("true");
+      res.json(result[0]);
     }
     else
     //login false

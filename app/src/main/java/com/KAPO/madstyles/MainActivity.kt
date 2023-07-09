@@ -34,11 +34,13 @@ class MainActivity : AppCompatActivity() {
 
     private var initTime = 0L
     var id: String? = ""
-
+    var gender:String?=""
     fun getID(): String {
         return id.toString()
     }
-
+    fun getgender(): String {
+        return gender.toString()
+    }
     // 뷰 페이저 어댑터
     class MyFragmentPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
         val fragments =
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 10 && resultCode === Activity.RESULT_OK) {
             id = data?.getStringExtra("id")
+            gender=data?.getStringExtra("gender")
         }
     }
 

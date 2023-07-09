@@ -51,9 +51,11 @@ class LoginActivity : AppCompatActivity() {
         JSONobj.put("id",id)
         JSONobj.put("password",pw)
         serverCommu.sendRequest(JSONobj, "login", {result ->
-            Log.d("Result","${result}")
-            if (result == "true") {
+            //Log.d("Result","${result}")
+            if (result != "false") {
+                val infotest=JSONObject(result)
                 intent.putExtra("id",id)
+                intent.putExtra("gender",infotest.getString("gender"))
                 setResult(RESULT_OK, intent)
                 finish()
             } else {

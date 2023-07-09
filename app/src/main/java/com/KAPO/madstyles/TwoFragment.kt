@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.concurrent.thread
@@ -76,19 +77,22 @@ class TwoFragment : Fragment() {
         recyclerView.layoutManager = GridLayoutManager(context, 2)
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter
-        view.findViewById<Button>(R.id.btngendertoggle).setOnClickListener {
+        val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
+       btnrank.setOnClickListener {
             val id = (activity as MainActivity).getID()
+            btnrank.text=genderchange(btnrank.text.toString())
+            //var gender=(activity as MainActivity).getgender()
             thread(start=true)
             {
-                sendIdRequest(id)
+                requestRanking(id,btnrank.text.toString())
             }
         }
         return view
     }
-    private fun sendIdRequest(id: String) {
+    private fun requestRanking(id: String,gender:String) {
         val JSONobj= JSONObject()
         JSONobj.put("id",id)
-        serverCommu.sendRequest(JSONobj, "ranking", {result ->
+        serverCommu.sendRequest(JSONobj, "ranking/${gender}", {result ->
             Log.d("Result","${result}")
             json = result
             items.clear()
@@ -119,9 +123,17 @@ class TwoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val id = (activity as MainActivity).getID()
+        val gender=(activity as MainActivity).getgender()
+        view.findViewById<Button>(R.id.btngendertoggle).text=gender
         thread(start=true)
         {
-            sendIdRequest(id)
+            requestRanking(id,gender)
         }
+    }
+    fun genderchange(gender:String):String{
+        if (gender=="남자")
+            return "여자"
+        else
+            return "남자"
     }
 }

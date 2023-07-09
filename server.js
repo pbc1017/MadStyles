@@ -3,6 +3,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const express=require('express');
 const axios=require("axios");
 const cheerio=require("cheerio");
+const prompt=require('prompt-sync')({singint:true});
 
 var app=express();
 var server=require('http').createServer(app);
@@ -27,12 +28,7 @@ app.post('/createid',async (req,res)=>{
   try{
     await client.connect();
     userdata=client.db('Users').collection('person');
-    await userdata.insertOne({id:req.body.id,
-      password:req.body.password,
-      prefer:{
-        color:req.body.color
-      }
-    });
+    await userdata.insertOne(req.body);
   }
   finally
   {
@@ -46,12 +42,7 @@ app.post('/addfashion',async (req,res)=>{
   try{
     await client.connect();
     fashiondata=client.db('Fashion').collection('Clothes');
-    await fashiondata.insertOne({
-      name:req.body.name,
-      price:req.body.price,
-      imgurl:req.body.imgurl,
-      color:req.body.color
-    });
+    await fashiondata.insertOne(req.body);
   }
   finally
   {
@@ -61,12 +52,12 @@ app.post('/addfashion',async (req,res)=>{
    
 });
 
-app.post('/requestmain',async (req,res)=>{
+app.post('/ranking',async (req,res)=>{
   try{
     await client.connect();
     const user=await client.db('Users').collection('person').find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
+    const result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(20).toArray();
     res.json(result);
   }
   finally
@@ -76,12 +67,12 @@ app.post('/requestmain',async (req,res)=>{
   }
 });
 
-app.post('/requestmain',async (req,res)=>{
+app.post('/ranking/:gender',async (req,res)=>{
   try{
     await client.connect();
     const user=await client.db('Users').collection('person').find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
+    const result= await fashiondata.find({gender:req.body.gender}).sort({"rank":-1}).limit(20).toArray();
     res.json(result);
   }
   finally
@@ -90,6 +81,7 @@ app.post('/requestmain',async (req,res)=>{
     
   }
 });
+
 
 app.post('/changeinfo',async (req,res)=>{
   try{
@@ -111,7 +103,7 @@ app.post('/login',async (req,res)=>{
   try{
     await client.connect();
     userdata=client.db('Users').collection('person');
-    const result=await userdata.find({id:req.body.id}).toArray();
+    const result=await userdata.find(req.body).toArray();
     if(result.length>0)
     {
       //login succeed
@@ -128,17 +120,18 @@ app.post('/login',async (req,res)=>{
 
 });
 
+/*
 app.get('/ranking/:name/:id',async (req,res)=>{
     if(req.params.name=="musinsa")
       //result=await GetFromMusinsa("https://www.musinsa.com/categories/item/"+req.params.id);//추천
-      result=await GetFromMusinsa("https://www.musinsa.com/ranking/best?period=month&viewType=large&mainCategory="+req.params.id);
+      result=await GetFromMusinsa("https://www.musinsa.com/ranking/best?period=dayr&viewType=large&mainCategory="+req.params.id);
       //
     else
       result=await GetFromStyleNanda("https://stylenanda.com/product/list.html?cate_no=4259");
   res.send(result);
 
 });
-
+*/
 
 server.listen(80,main);
 
@@ -162,6 +155,7 @@ function main() {
     //.toArray()
     //await collection.updateOne(QUERYDATA},{$set:{CHANGEDATA}})
     console.log("Server On");
+
 
 }
 
@@ -203,3 +197,6 @@ async function GetFromStyleNanda(url) //"https://stylenanda.com/product/list.htm
   return res
 }
 
+function AutoAdd(){
+
+}

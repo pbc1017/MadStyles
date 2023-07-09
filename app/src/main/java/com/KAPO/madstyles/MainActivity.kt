@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             tab.text = "Home"
 //            tab.setIcon(R.drawable.contacts_icon)
         } else if (position == 1) {
-            tab.text = "Lank"
+            tab.text = "Rank"
 //            tab.setIcon(R.drawable.gallery_icon)
         } else if (position == 2) {
             tab.text = "Search"
@@ -78,7 +78,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.viewpager.adapter = MyFragmentPagerAdapter(this)
-
         TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
             tabSetting(tab, position)
         }.attach()

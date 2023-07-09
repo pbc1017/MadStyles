@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,17 +18,19 @@ import org.json.JSONObject
 import kotlin.concurrent.thread
 
 data class Item(
-    val id: String,
+    val id: Int,
     val name: String,
+    val color:String,
     val brand: String,
-    val price: Double,
+    val price: Int,
     val imgUrl: String,
-    val rank:String
+    val rank:Int
 )
 
 class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val rank:TextView=itemView.findViewById(R.id.item_rank)
         val name: TextView = itemView.findViewById(R.id.item_name)
         val brand: TextView = itemView.findViewById(R.id.item_brand)
         val price: TextView = itemView.findViewById(R.id.item_price)
@@ -41,6 +44,7 @@ class ItemAdapter(private val items: MutableList<Item>) : RecyclerView.Adapter<I
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = items[position]
+        holder.rank.text=item.rank.toString()
         holder.name.text = item.name
         holder.brand.text = item.brand
         holder.price.text = item.price.toString()
@@ -68,31 +72,39 @@ class TwoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_two, container, false)
-        recyclerView = view.findViewById(R.id.recycler_view)
+        recyclerView = view.findViewById(R.id.recycler_view_ranking)
         recyclerView.layoutManager = GridLayoutManager(context, 2)
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter
+        view.findViewById<Button>(R.id.btngendertoggle).setOnClickListener {
+            val id = (activity as MainActivity).getID()
+            thread(start=true)
+            {
+                sendIdRequest(id)
+            }
+        }
         return view
     }
     private fun sendIdRequest(id: String) {
         val JSONobj= JSONObject()
         JSONobj.put("id",id)
-        serverCommu.sendRequest(JSONobj, "requestmain", {result ->
+        serverCommu.sendRequest(JSONobj, "ranking", {result ->
             Log.d("Result","${result}")
             json = result
-
+            items.clear()
             val jsonArray = JSONArray(json)
 
             for (i in 0 until jsonArray.length()) {
                 val jsonObj = jsonArray.getJSONObject(i)
                 items.add(
                     Item(
-                        id = jsonObj.getString("id"),
+                        id = jsonObj.getInt("id"),
                         name = jsonObj.getString("name"),
                         brand = jsonObj.getString("brand"),
-                        price = jsonObj.getDouble("price"),
-                        imgUrl = jsonObj.getString("imgUrl"),
-                        rank = jsonObj.getString("rank")
+                        price = jsonObj.getInt("price"),
+                        imgUrl = jsonObj.getString("imageUrl"),
+                        color=jsonObj.getString("color"),
+                        rank=i+1
                     )
                 )
             }

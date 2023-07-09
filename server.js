@@ -72,9 +72,9 @@ app.post('/ranking/:pgnum',async (req,res)=>{
     await client.connect();
     fashiondata=client.db('Fashion').collection('Clothes');
     if(req.body.kind=="전체")
-      result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).limit(20).toArray();
+      result= await fashiondata.find({gender:req.body.gender}).skip(20*(req.params.pgnum-1)).sort({"rank":-1}).limit(20).toArray();
     else
-      result= await fashiondata.find(req.body).sort({"rank":-1}).limit(20).toArray(); //body에 gender와 kind
+      result= await fashiondata.find(req.body).sort({"rank":-1}).skip(20*(req.params.pgnum-1)).limit(20).toArray(); //body에 gender와 kind
     res.json(result);
   }
   finally

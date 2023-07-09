@@ -1,5 +1,6 @@
 package com.KAPO.madstyles
 
+import android.app.DownloadManager.Query
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,7 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -66,6 +70,8 @@ class TwoFragment : Fragment() {
     private lateinit var itemAdapter: ItemAdapter
     val items = mutableListOf<Item>()
     var json: String=""
+    var pgnum:Int=1
+    var kind:String="전체"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,25 +80,57 @@ class TwoFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_two, container, false)
         recyclerView = view.findViewById(R.id.recycler_view_ranking)
+        val kindview=view.findViewById<LinearLayout>(R.id.kindview)
+
+        kindview.addView(createButton("전체"))
+        kindview.addView(createButton("상의"))
+        kindview.addView(createButton("바지"))
+        kindview.addView(createButton("아우터"))
+        kindview.addView(createButton("신발"))
+        kindview.addView(createButton("가방"))
+        kindview.addView(createButton("모자"))
+
         recyclerView.layoutManager = GridLayoutManager(context, 2)
         itemAdapter = ItemAdapter(items)
         recyclerView.adapter = itemAdapter
         val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
+        val btnprev=view.findViewById<Button>(R.id.btnprev)
+        val btnnext=view.findViewById<Button>(R.id.btnnext)
+        btnprev.isVisible=false
        btnrank.setOnClickListener {
             val id = (activity as MainActivity).getID()
             btnrank.text=genderchange(btnrank.text.toString())
+            pgnum=1
             //var gender=(activity as MainActivity).getgender()
             thread(start=true)
             {
-                requestRanking(id,btnrank.text.toString())
+                requestRanking(btnrank.text.toString())
+            }
+        }
+        btnprev.setOnClickListener{
+            pgnum--
+            thread(start=true)
+            {
+                requestRanking(btnrank.text.toString())
+            }
+            if(pgnum<=1)
+                btnprev.isVisible=false
+        }
+        btnnext.setOnClickListener{
+            pgnum++
+            btnprev.isVisible=true
+            thread(start=true)
+            {
+                requestRanking(btnrank.text.toString())
             }
         }
         return view
     }
-    private fun requestRanking(id: String,gender:String) {
-        val JSONobj= JSONObject()
-        JSONobj.put("id",id)
-        serverCommu.sendRequest(JSONobj, "ranking/${gender}", {result ->
+    private fun requestRanking(gender:String) {
+        val QueryObj=JSONObject()
+        QueryObj.put("gender",gender)
+        QueryObj.put("kind",kind)
+        serverCommu.sendRequest(QueryObj, "ranking/${pgnum}", {result ->
             Log.d("Result","${result}")
             json = result
             items.clear()
@@ -108,12 +146,13 @@ class TwoFragment : Fragment() {
                         price = jsonObj.getInt("price"),
                         imgUrl = jsonObj.getString("imageUrl"),
                         color=jsonObj.getString("color"),
-                        rank=i+1
+                        rank=20*(pgnum-1)+i+1
                     )
                 )
             }
             requireActivity().runOnUiThread{
                 itemAdapter.notifyDataSetChanged()
+                recyclerView.scrollToPosition(0)
             }
         }, {result ->
             Log.d("Result","${result}")
@@ -127,8 +166,26 @@ class TwoFragment : Fragment() {
         view.findViewById<Button>(R.id.btngendertoggle).text=gender
         thread(start=true)
         {
-            requestRanking(id,gender)
+            requestRanking(gender)
         }
+    }
+
+    fun createButton(name:String):View{
+        val btn=Button(context)
+        //btn.id=ViewCompat.generateViewId()
+        btn.text=name
+        btn.layoutParams=LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT)
+        btn.setOnClickListener{
+            kind=name
+            thread(start=true)
+            {
+                pgnum=1
+                requestRanking(view?.findViewById<Button>(R.id.btngendertoggle)?.text.toString())
+            }
+
+        }
+        btn.id=ViewCompat.generateViewId()
+        return btn
     }
     fun genderchange(gender:String):String{
         if (gender=="남자")

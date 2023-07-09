@@ -79,10 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.viewpager.adapter = MyFragmentPagerAdapter(this)
-        TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
-            tabSetting(tab, position)
-        }.attach()
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -90,6 +87,10 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == 10 && resultCode === Activity.RESULT_OK) {
             id = data?.getStringExtra("id")
             gender=data?.getStringExtra("gender")
+            binding.viewpager.adapter = MyFragmentPagerAdapter(this)
+            TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
+                tabSetting(tab, position)
+            }.attach()
         }
     }
 

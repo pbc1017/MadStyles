@@ -161,7 +161,6 @@ class TwoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val id = (activity as MainActivity).getID()
         val gender=(activity as MainActivity).getgender()
         view.findViewById<Button>(R.id.btngendertoggle).text=gender
         thread(start=true)

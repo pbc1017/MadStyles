@@ -11,61 +11,36 @@ app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
 
-app.get('/userlist',async(req,res)=>{
+// app.post('/createid',async (req,res)=>{
+//   try{
+//     await client.connect();
+//     userdata=client.db('Users').collection('person');
+//     await userdata.insertOne(req.body);
+//   }
+//   finally
+//   {
+//     client.close();
+//     res.json("OK");
+//   }
+   
+// });
+
+
+app.post('/recommend',async (req,res)=>{
   try{
     await client.connect();
     userdata=client.db('Users').collection('person');
-    const result=await userdata.find().toArray();
+    const user=await userdata.find(req.body).toArray();
+    fashiondata=client.db('Fashion').collection('Clothes');
+    result= await fashiondata.find(user[0].prefer).sort({"rank":-1}).limit(10).toArray();
     res.json(result);
   }
   finally
   {
     client.close();
-  }
-});
-
-app.post('/createid',async (req,res)=>{
-  try{
-    await client.connect();
-    userdata=client.db('Users').collection('person');
-    await userdata.insertOne(req.body);
-  }
-  finally
-  {
-    client.close();
-    res.json("OK");
-  }
-   
-});
-
-app.post('/addfashion',async (req,res)=>{
-  try{
-    await client.connect();
-    fashiondata=client.db('Fashion').collection('Clothes');
-    await fashiondata.insertOne(req.body);
-  }
-  finally
-  {
-    client.close();
-    res.json("OK");
-  }
-   
-});
-
-// app.post('/ranking',async (req,res)=>{
-//   try{
-//     await client.connect();
-//     const user=await client.db('Users').collection('person').find(req.body).toArray();
-//     fashiondata=client.db('Fashion').collection('Clothes');
-//     const result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(20).toArray();
-//     res.json(result);
-//   }
-//   finally
-//   {
-//     client.close();
     
-//   }
-// });
+  }
+});
 
 app.post('/ranking/:pgnum',async (req,res)=>{
   try{
@@ -84,36 +59,6 @@ app.post('/ranking/:pgnum',async (req,res)=>{
   }
 });
 
-app.post('/ranking/:gender/:pgnum',async (req,res)=>{
-  try{
-    await client.connect();
-    //const user=await client.db('Users').collection('person').find(req.body).toArray();
-    fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).skip(20*(req.params.pgnum-1)).limit(20).toArray();
-    res.json(result);
-  }
-  finally
-  {
-    client.close();
-    
-  }
-});
-
-// app.post('/changeinfo',async (req,res)=>{
-//   try{
-//     await client.connect();
-//     const user=await client.db('Users').collection('person').find(req.body).toArray();
-//     fashiondata=client.db('Fashion').collection('Clothes');
-//     const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
-//     res.json(result);
-//   }
-//   finally
-//   {
-//     client.close();
-    
-//   }
-   
-// });
 
 app.post('/login',async (req,res)=>{
   try{
@@ -175,44 +120,40 @@ function main() {
 
 }
 
-async function GetFromMusinsa(url) //"https://www.musinsa.com/categories/item/001001"
-{
-  let res=[]
-  const html=await axios.get(url);
+// async function GetFromMusinsa(url) //"https://www.musinsa.com/categories/item/001001"
+// {
+//   let res=[]
+//   const html=await axios.get(url);
 
-  const $=cheerio.load(html.data)
-  const clothes=$(".li_box")
-  clothes.map((i,element)=>{
-    res[i]={
-      //name:$(element).find(".img-block").attr("title"),
-      name:$(element).find(".list_info").find("a").attr("title"),
-      price:$(element).find(".txt_price_member").text(),
-      img:$(element).find("img").attr("data-original")
-    };
-    //console.log($(element).find(".item_title").text())//브랜드
-    //console.log($(element).find(".img-block").attr("href"))//상품링크
-  });
-  return res
-}
+//   const $=cheerio.load(html.data)
+//   const clothes=$(".li_box")
+//   clothes.map((i,element)=>{
+//     res[i]={
+//       //name:$(element).find(".img-block").attr("title"),
+//       name:$(element).find(".list_info").find("a").attr("title"),
+//       price:$(element).find(".txt_price_member").text(),
+//       img:$(element).find("img").attr("data-original")
+//     };
+//     //console.log($(element).find(".item_title").text())//브랜드
+//     //console.log($(element).find(".img-block").attr("href"))//상품링크
+//   });
+//   return res
+// }
 
-async function GetFromStyleNanda(url) //"https://stylenanda.com/product/list.html?cate_no=4259"
-{
-  let res=[]
-  const html=await axios.get(url);
-  const $=cheerio.load(html.data)
-  const clothes=$(".column4").find("li")
-  clothes.map((i,element)=>{
-    sale=$(element).find(".table").find("span").filter((i,el)=>{return $(el).attr("class")!="price";}).text()
-    res[i]={
-        name:$(element).find(".name").find("a").text().split(':')[1].trim(),
-        price:(sale!="")?sale:$(element).find(".price").text(),
-        img:"https:"+$(element).find(".thumb").find("a").find("img").attr("src")
-    };
-    //console.log("https://stylenanda.com"+$(element).find(".name").find("a").attr("href"))//상품링크
-  });
-  return res
-}
-
-function AutoAdd(){
-
-}
+// async function GetFromStyleNanda(url) //"https://stylenanda.com/product/list.html?cate_no=4259"
+// {
+//   let res=[]
+//   const html=await axios.get(url);
+//   const $=cheerio.load(html.data)
+//   const clothes=$(".column4").find("li")
+//   clothes.map((i,element)=>{
+//     sale=$(element).find(".table").find("span").filter((i,el)=>{return $(el).attr("class")!="price";}).text()
+//     res[i]={
+//         name:$(element).find(".name").find("a").text().split(':')[1].trim(),
+//         price:(sale!="")?sale:$(element).find(".price").text(),
+//         img:"https:"+$(element).find(".thumb").find("a").find("img").attr("src")
+//     };
+//     //console.log("https://stylenanda.com"+$(element).find(".name").find("a").attr("href"))//상품링크
+//   });
+//   return res
+// }

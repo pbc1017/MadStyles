@@ -53,11 +53,11 @@ class LoginActivity : AppCompatActivity() {
         JSONobj.put("id",id)
         JSONobj.put("password",pw)
         serverCommu.sendRequest(JSONobj, "login", {result ->
-            Log.d("Result",result.toString())
+            Log.d("Login OK",result.toString())
             //Log.d("Result","${result}")
             if (result != "false") {
                 val infotest=JSONObject(result)
-                intent.putExtra("id",id)
+                intent.putExtra("id",infotest.getString("id"))
                 intent.putExtra("gender",infotest.getString("gender"))
                 setResult(RESULT_OK, intent)
                 finish()
@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
                this.runOnUiThread{Toast.makeText(this,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()}
             }
         }, {result ->
-            Log.d("Result","${result}")
+            Log.d("Err:","${result}")
         })
     }
 

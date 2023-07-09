@@ -1,34 +1,25 @@
 package com.KAPO.madstyles
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.KAPO.madstyles.databinding.ActivityLoginBinding
+import android.widget.Button
+import androidx.recyclerview.widget.RecyclerView
 import com.KAPO.madstyles.databinding.FragmentOneBinding
+import org.json.JSONArray
+import org.json.JSONObject
+import kotlin.concurrent.thread
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [OneFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class OneFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private lateinit var binding: FragmentOneBinding
-    private var id: String = ""
-
-    fun initID(mainId: String) {
-        id = mainId
-    }
+    private lateinit var itemAdapter: ItemAdapter
+    var json:String=""
+    val items = mutableListOf<Item>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = FragmentOneBinding.inflate(layoutInflater)
     }
 
 
@@ -36,28 +27,55 @@ class OneFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+        binding = FragmentOneBinding.inflate(inflater,container,false)
+        return binding.root
 
-        return inflater.inflate(R.layout.fragment_one, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment OneFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            OneFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding= FragmentOneBinding.bind(view)
+        binding.txtrecommend1.text="${(activity as MainActivity).getID()}에게 추천하는 아이템"
+        itemAdapter= ItemAdapter(items)
+        view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter
+        val id = (activity as MainActivity).getID()
+        thread(start=true)
+        {
+            Requestrecommend(id)
+        }
+
+
+    }
+
+    private fun Requestrecommend(id:String) {
+        val QueryObj= JSONObject()
+        QueryObj.put("id",id)
+        serverCommu.sendRequest(QueryObj, "recommend", {result ->
+            json = result
+            Log.d("RECOMMEND","${json}")
+            items.clear()
+            val jsonArray = JSONArray(json)
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObj = jsonArray.getJSONObject(i)
+                items.add(
+                    Item(
+                        id = jsonObj.getInt("id"),
+                        name = jsonObj.getString("name"),
+                        brand = jsonObj.getString("brand"),
+                        price = jsonObj.getInt("price"),
+                        imgUrl = jsonObj.getString("imageUrl"),
+                        color=jsonObj.getString("color"),
+                        rank=jsonObj.getInt("rank")
+                    )
+                )
             }
+            requireActivity().runOnUiThread{
+                itemAdapter.notifyDataSetChanged()
+            }
+        }, {result ->
+            Log.d("Result","${result}")
+        })
     }
+
 }

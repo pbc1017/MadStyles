@@ -20,84 +20,128 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <Button
+            android:id="@+id/filter_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="filter"/>
+        <Button
             android:id="@+id/search_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="search"/>
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="전체"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="남자"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="전체"/>
+                android:text="성별"/>
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/kindview1">
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
-        </ScrollView>
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <LinearLayout
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <Button
+                android:text="종류"/>
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="전체"/>
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="남자"/>
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="전체"/>
-            </LinearLayout>
-        </ScrollView>
-        <ScrollView
+                    android:orientation="horizontal"
+                    android:id="@+id/kindview2">
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <LinearLayout
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <Button
+                android:text="색상"/>
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="전체"/>
-                <Button
+                    android:orientation="horizontal"
+                    android:id="@+id/kindview3">
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="가격"/>
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="남자"/>
-                <Button
+                    android:orientation="horizontal"
+                    android:id="@+id/kindview4">
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정렬"/>
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="전체"/>
-            </LinearLayout>
-        </ScrollView>
+                    android:orientation="horizontal"
+                    android:id="@+id/kindview5">
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
     </LinearLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_search"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

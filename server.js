@@ -67,12 +67,29 @@ app.post('/addfashion',async (req,res)=>{
 //   }
 // });
 
-app.post('/ranking/:gender',async (req,res)=>{
+app.post('/ranking/:pgnum',async (req,res)=>{
+  try{
+    await client.connect();
+    fashiondata=client.db('Fashion').collection('Clothes');
+    if(req.body.kind=="전체")
+      result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).limit(20).toArray();
+    else
+      result= await fashiondata.find(req.body).sort({"rank":-1}).limit(20).toArray(); //body에 gender와 kind
+    res.json(result);
+  }
+  finally
+  {
+    client.close();
+    
+  }
+});
+
+app.post('/ranking/:gender/:pgnum',async (req,res)=>{
   try{
     await client.connect();
     //const user=await client.db('Users').collection('person').find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).limit(20).toArray();
+    const result= await fashiondata.find({gender:req.params.gender}).sort({"rank":-1}).skip(20*(req.params.pgnum-1)).limit(20).toArray();
     res.json(result);
   }
   finally
@@ -82,22 +99,21 @@ app.post('/ranking/:gender',async (req,res)=>{
   }
 });
 
-
-app.post('/changeinfo',async (req,res)=>{
-  try{
-    await client.connect();
-    const user=await client.db('Users').collection('person').find(req.body).toArray();
-    fashiondata=client.db('Fashion').collection('Clothes');
-    const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
-    res.json(result);
-  }
-  finally
-  {
-    client.close();
+// app.post('/changeinfo',async (req,res)=>{
+//   try{
+//     await client.connect();
+//     const user=await client.db('Users').collection('person').find(req.body).toArray();
+//     fashiondata=client.db('Fashion').collection('Clothes');
+//     const result= await fashiondata.find({color:user[0].prefer.color}).toArray();
+//     res.json(result);
+//   }
+//   finally
+//   {
+//     client.close();
     
-  }
+//   }
    
-});
+// });
 
 app.post('/login',async (req,res)=>{
   try{

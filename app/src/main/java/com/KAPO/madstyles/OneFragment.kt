@@ -1,5 +1,7 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -7,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.KAPO.madstyles.databinding.FragmentOneBinding
@@ -44,27 +47,38 @@ class OneFragment : Fragment() {
         val id = (activity as MainActivity).getID()
         val gender=(activity as MainActivity).getgender()
 
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val id = data?.getStringExtra("id")?.toInt()
+                id?.let {
+                    // id를 기반으로 뷰페이저 페이지를 변경
+                    if (id > -1) (activity as? MainActivity)?.changeViewPagerPage(it)
+                }
+            }
+        }
+
         binding.txtrecommend1.text="${id}에게 추천하는 ${gender}아이템"
-        itemAdapter1= ItemAdapter(items[0],1)
+        itemAdapter1= ItemAdapter(items[0],1, resultLauncher)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter1
         val linmanager1=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager1
         Requestrecommend(id,0)
 
         binding.txtrecommend2.text="${id}의 취향에 따른 추천 아이템"
-        itemAdapter2=ItemAdapter(items[1],1)
+        itemAdapter2=ItemAdapter(items[1],1,resultLauncher)
         val linmanager2=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_2).adapter=itemAdapter2
         view.findViewById<RecyclerView>(R.id.recommend_view_2).layoutManager=linmanager2
         Requestrecommend(id,1)
 
-        itemAdapter3= ItemAdapter(items[2],1)
+        itemAdapter3= ItemAdapter(items[2],1,resultLauncher)
         val linmanager3=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_3).adapter=itemAdapter3
         view.findViewById<RecyclerView>(R.id.recommend_view_3).layoutManager=linmanager3
         Requestrecommend(id,2)
 
-        itemAdapter4= ItemAdapter(items[3],1) //item을 어떻게 가져오지?
+        itemAdapter4= ItemAdapter(items[3],1,resultLauncher) //item을 어떻게 가져오지?
         val linmanager4=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recent_view).adapter=itemAdapter4
         view.findViewById<RecyclerView>(R.id.recent_view).layoutManager=linmanager4

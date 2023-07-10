@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     fun getgender(): String {
         return gender.toString()
     }
+    fun changeViewPagerPage(index: Int) {
+        binding.viewpager.currentItem = index
+    }
     // 뷰 페이저 어댑터
     class MyFragmentPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
         val fragments =

@@ -1,6 +1,8 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
 import android.app.DownloadManager.Query
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,6 +13,9 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
@@ -32,7 +37,7 @@ data class Item(
     val rank:Int
 )
 
-class ItemAdapter(private val items: MutableList<Item>,index:Int=2) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val resultLauncher:ActivityResultLauncher<Intent>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
     val index=index
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val rank:TextView=itemView.findViewById(R.id.item_rank)
@@ -63,9 +68,10 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2) : RecyclerVi
             lp.height=1000
             holder.rank.visibility=View.GONE
         }
-        // To load image from URL, you may need a library like Picasso or Glide
-        // Here is an example with Picasso:
-        // Picasso.get().load(item.imageUrl).into(holder.image)
+        holder.itemView.setOnClickListener() {
+            val intent = Intent(it.context, DetailActivity::class.java)
+            resultLauncher.launch(intent)
+        }
     }
 
     override fun getItemCount() = items.size
@@ -88,6 +94,17 @@ class TwoFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view_ranking)
         val kindview=view.findViewById<LinearLayout>(R.id.kindview)
 
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val id = data?.getStringExtra("id")?.toInt()
+                id?.let {
+                    // id를 기반으로 뷰페이저 페이지를 변경
+                    if (id > -1) (activity as? MainActivity)?.changeViewPagerPage(it)
+                }
+            }
+        }
+
         kindview.addView(createButton("전체"))
         kindview.addView(createButton("상의"))
         kindview.addView(createButton("바지"))
@@ -97,7 +114,7 @@ class TwoFragment : Fragment() {
         kindview.addView(createButton("모자"))
 
         recyclerView.layoutManager = GridLayoutManager(context, 2)
-        itemAdapter = ItemAdapter(items)
+        itemAdapter = ItemAdapter(items,0, resultLauncher)
         recyclerView.adapter = itemAdapter
         val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
         val btnprev=view.findViewById<Button>(R.id.btnprev)

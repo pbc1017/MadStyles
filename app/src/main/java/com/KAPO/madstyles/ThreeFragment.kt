@@ -2,6 +2,7 @@ package com.KAPO.madstyles
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -38,10 +40,20 @@ class ThreeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val id = data?.getStringExtra("id")?.toInt()
+                id?.let {
+                    // id를 기반으로 뷰페이저 페이지를 변경
+                    if (id > -1) (activity as? MainActivity)?.changeViewPagerPage(it)
+                }
+            }
+        }
         binding = FragmentThreeBinding.inflate(inflater, container, false)
         recyclerView = binding.recyclerViewSearch
         recyclerView.layoutManager = GridLayoutManager(context, 2)
-        itemAdapter = ItemAdapter(items)
+        itemAdapter = ItemAdapter(items,3,resultLauncher)
         recyclerView.adapter = itemAdapter
         val kindview=arrayOf<LinearLayout> (binding.kindview1,binding.kindview2,binding.kindview3,binding.kindview4,binding.kindview5)
 

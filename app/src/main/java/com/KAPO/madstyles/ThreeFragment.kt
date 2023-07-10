@@ -1,5 +1,7 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -7,10 +9,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -64,6 +68,7 @@ class ThreeFragment : Fragment() {
                 sendSearchRequest()
             }
             binding.filter.visibility=View.GONE
+            hideKeyboard()
         }
         binding.filterButton.setOnClickListener() {
             if (binding.filter.visibility==View.VISIBLE) {
@@ -71,10 +76,16 @@ class ThreeFragment : Fragment() {
             } else {
                 binding.filter.visibility=View.VISIBLE
             }
-
         }
 
         return binding.root
+    }
+
+    fun hideKeyboard() {
+        val inputMethodManager = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        // Check if no view has focus:
+        val view = activity?.currentFocus ?: View(context)
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     val similarityMap = mapOf(

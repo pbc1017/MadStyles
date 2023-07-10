@@ -27,7 +27,7 @@ class ThreeFragment : Fragment() {
     private lateinit var itemAdapter: ItemAdapter
     val items = mutableListOf<Item>()
     val buttonMap: MutableMap<String, MutableList<Button>> = mutableMapOf()
-    val filter: MutableMap<String, MutableList<String>> = mutableMapOf()
+    val filter: MutableMap<String, MutableSet<String>> = mutableMapOf()
     private lateinit var binding: FragmentThreeBinding
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,7 +48,7 @@ class ThreeFragment : Fragment() {
             arrayOf<String>("전체","높음", "중간", "낮음"),
             arrayOf<String>("인기순","낮은 가격순","높은 가격순"),)
 
-        val groups = arrayOf<String>("성별","종류","색상","가격","정렬")
+        val groups = arrayOf<String>("gender","kind","color","pRange","sort")
         var i = 0
         for (ll in kindview) {
             for (btnName in filterButton[i]) {
@@ -56,10 +56,21 @@ class ThreeFragment : Fragment() {
             }
             i += 1
         }
-        filter["정렬"] = mutableListOf("인기순") // 정렬 기본값 설정
+        filter["sort"] = mutableSetOf("인기순") // 정렬 기본값 설정
 
         binding.searchButton.setOnClickListener() {
-            val result = sendSearchRequest(binding.searchText.text.toString())
+            thread(start=true)
+            {
+                sendSearchRequest()
+            }
+            binding.filter.visibility=View.GONE
+        }
+        binding.filterButton.setOnClickListener() {
+            if (binding.filter.visibility==View.VISIBLE) {
+                binding.filter.visibility=View.GONE
+            } else {
+                binding.filter.visibility=View.VISIBLE
+            }
 
         }
 
@@ -69,7 +80,10 @@ class ThreeFragment : Fragment() {
     val similarityMap = mapOf(
         "검은색" to "검정",
         "검은" to "검정",
-        "검정색" to "검정"
+        "검정색" to "검정",
+        "남성" to "남자",
+        "여성" to "여자",
+        "팬츠" to "바지"
         //... add other similar words
     )
 
@@ -82,10 +96,11 @@ class ThreeFragment : Fragment() {
 
     val sorts = listOf("인기순", "낮은 가격순", "높은 가격순")
 
-    fun sendSearchRequest(inputText: String):JSONObject {
+    fun makeQuery(inputText: String): JSONObject {
         val words = inputText.split(" ").toMutableList()
         val query = JSONObject()
         val wordsCopy = ArrayList(words)
+        Log.d("word",words.toString())
         for (word in wordsCopy) {
             val realWord = similarityMap[word] ?: word
             for ((field, values) in fieldsValues) {
@@ -98,23 +113,67 @@ class ThreeFragment : Fragment() {
                 }
             }
         }
+        Log.d("word",words.toString())
         val remainingWords = words.joinToString(" ")
-        if (remainingWords != "") {
+        if (remainingWords.isNotBlank()) {
             query.put("name", remainingWords)
         }
 
         for ((field, values) in filter) {
-            if (values.contains("전체")) continue
-            val array = query.optJSONArray(field) ?: JSONArray()
-            for (value in values) {
-                array.put(value)
+            var array = query.optJSONArray(field) ?: JSONArray()
+            if (values.contains("전체")) {
+                array = JSONArray(mutableListOf("전체"))
+            } else {
+                for (value in values) {
+                    if (!array.toString().contains(value)) {
+                        array.put(value)
+                    }
+                }
             }
             query.put(field, array)
         }
 
-        Log.d("QUERY",query.toString())
+        // If there's no remaining words (i.e., the search query is empty), remove the "name" key from the query
+        if (remainingWords.isBlank()) {
+            query.remove("name")
+        }
+
+        Log.d("QUERY", query.toString())
         return query
-        // use the returned items to update your RecyclerView
+    }
+
+
+    fun sendSearchRequest() {
+        val query = makeQuery(binding.searchText.text.toString())
+        changeButton(query)
+        serverCommu.sendRequest(query, "search", {result ->
+            Log.d("Result","${result}")
+            val json = result
+            items.clear()
+            val jsonArray = JSONArray(json)
+            var pgnum = 1
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObj = jsonArray.getJSONObject(i)
+                items.add(
+                    Item(
+                        id = jsonObj.getInt("id"),
+                        name = jsonObj.getString("name"),
+                        brand = jsonObj.getString("brand"),
+                        price = jsonObj.getInt("price"),
+                        imgUrl = jsonObj.getString("imageUrl"),
+                        color=jsonObj.getString("color"),
+                        rank=20*(pgnum-1)+i+1
+                    )
+                )
+            }
+            requireActivity().runOnUiThread{
+                itemAdapter.notifyDataSetChanged()
+                recyclerView.scrollToPosition(0)
+            }
+        }, {result ->
+            Log.d("Result","${result}")
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -138,12 +197,10 @@ class ThreeFragment : Fragment() {
         if (btn.text == "인기순") btn.setBackgroundColor(Color.WHITE)
         btn.setOnClickListener {
             val button = it as Button
-            var currentList = filter[group] ?: mutableListOf()
+            var currentList = filter[group] ?: mutableSetOf()
             val currentButtonList = buttonMap[group] ?: mutableListOf()
-            if (group == "정렬") {
-                if (currentList.contains(name)) {
-
-                } else {
+            if (group == "sort") {
+                if (!currentList.contains(name)) {
                     currentList.clear()
                     currentList.add(name)
                     currentButtonList.forEach { if(it.text == name) it.setBackgroundColor(Color.WHITE) else it.setBackgroundColor(Color.GRAY)}
@@ -186,7 +243,7 @@ class ThreeFragment : Fragment() {
                     }
                     // 전체 버튼을 제외한 모든 버튼이 선택되었다면 전체 버튼이 눌려진 것으로 처리합니다.
                     if (currentButtonList.all { it.text == "전체" || currentList.contains(it.text)}) {
-                        currentList = mutableListOf("전체")
+                        currentList = mutableSetOf("전체")
                         currentButtonList.forEach { it.setBackgroundColor(Color.WHITE)}
                     }
                 }
@@ -204,9 +261,26 @@ class ThreeFragment : Fragment() {
         return btn
     }
 
-    fun changeButton(newFilter: Map<String, List<String>>) {
-        for ((group, values) in newFilter) {
-            filter[group] = values.toMutableList()
+    fun changeButton(newFilter: JSONObject) {
+        val map: MutableMap<String, MutableSet<String>> = mutableMapOf()
+        val keys: Iterator<String> = newFilter.keys()
+        for (key in keys) {
+            val values = newFilter.optJSONArray(key)
+            val list = mutableSetOf<String>()
+            if (values != null) {
+                // 값이 JSONArray일 경우
+                for (i in 0 until values.length()) {
+                    list.add(values.getString(i))
+                }
+            } else {
+                // 값이 문자열일 경우
+                list.add(newFilter.getString(key))
+            }
+            map[key] = list
+        }
+        for ((group, values) in map) {
+            if (group == "name") continue
+            filter[group] = values.toList().toMutableSet()
             // 이제 필터가 변경되었으므로, 버튼의 색상도 업데이트해야 합니다.
             val currentButtonList = buttonMap[group] ?: mutableListOf()
             for (button in currentButtonList) {
@@ -217,5 +291,6 @@ class ThreeFragment : Fragment() {
                 }
             }
         }
+        //TODO: 전체가 포함되면 싹다 색칠, 싹다 색칠되면 전체로 변경
     }
 }

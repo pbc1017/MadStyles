@@ -148,6 +148,65 @@ app.post('/getaiimage',async(req,res)=>{
   })
   
 })
+
+app.post('/search', async (req, res) => {
+  try {
+    const query = req.body;
+    const dbQuery = {};
+    const sortQuery = {};
+
+    for (const key in query) {
+        if (key === 'sort') {
+            if (query[key][0] === '인기순') {
+                sortQuery.rank = -1;
+            } else if (query[key][0] === '낮은 가격순') {
+                sortQuery.price = 1;
+            } else if (query[key][0] === '높은 가격순') {
+                sortQuery.price = -1;
+            }
+            continue;
+        }
+        
+        if (query[key].includes('전체')) continue;
+        
+        if (key == 'name') {
+            let searchTerm = query.name; // "나이키"를 단어의 경계로 감쌈
+            dbQuery.$or = [
+                { name: { $regex: searchTerm, $options: 'i' } },
+                { brand: { $regex: searchTerm, $options: 'i' } }
+            ]
+        }
+        else {
+          if (key == 'pRange') {
+            array = [];
+            for (i of query[key]) {
+              if (i === '높음') {
+                array.push("High")
+              } else if (i === '중간') {
+                array.push("Mid")
+              } else if (i === '낮음') {
+                array.push("Low")
+              }
+            }
+            query[key] = array
+          }
+          dbQuery[key] = { $in: query[key] };
+        }
+    }
+    console.log(dbQuery)
+
+    await client.connect();
+    userdata=client.db('Fashion').collection('Clothes');
+    const results = await userdata
+        .find(dbQuery)
+        .sort(sortQuery)
+        .toArray();
+
+    res.json(results);
+  } finally {
+    client.close();
+  }
+});
 /*
 app.get('/ranking/:name/:id',async (req,res)=>{
     if(req.params.name=="musinsa")

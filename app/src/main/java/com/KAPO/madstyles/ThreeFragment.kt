@@ -62,10 +62,15 @@ class ThreeFragment : Fragment() {
         }
         filter["sort"] = mutableSetOf("인기순") // 정렬 기본값 설정
 
+        var prevSearch = ""
+
         binding.searchButton.setOnClickListener() {
+            var nowSearch = binding.searchText.text.toString()
+            Log.d("bool",(nowSearch == prevSearch).toString())
             thread(start=true)
             {
-                sendSearchRequest()
+                sendSearchRequest(nowSearch == prevSearch)
+                prevSearch = nowSearch
             }
             binding.filter.visibility=View.GONE
             hideKeyboard()
@@ -107,7 +112,7 @@ class ThreeFragment : Fragment() {
 
     val sorts = listOf("인기순", "낮은 가격순", "높은 가격순")
 
-    fun makeQuery(inputText: String): JSONObject {
+    fun makeQuery(inputText: String, isSame: Boolean): JSONObject {
         val words = inputText.split(" ").toMutableList()
         val query = JSONObject()
         val wordsCopy = ArrayList(words)
@@ -131,17 +136,19 @@ class ThreeFragment : Fragment() {
         }
 
         for ((field, values) in filter) {
-            var array = query.optJSONArray(field) ?: JSONArray()
-            if (values.contains("전체")) {
-                array = JSONArray(mutableListOf("전체"))
-            } else {
-                for (value in values) {
-                    if (!array.toString().contains(value)) {
-                        array.put(value)
+            if (isSame || field == "sort") {
+                var array = query.optJSONArray(field) ?: JSONArray()
+                if (values.contains("전체")) {
+                    array = JSONArray(mutableListOf("전체"))
+                } else {
+                    for (value in values) {
+                        if (!array.toString().contains(value)) {
+                            array.put(value)
+                        }
                     }
                 }
+                query.put(field, array)
             }
-            query.put(field, array)
         }
 
         // If there's no remaining words (i.e., the search query is empty), remove the "name" key from the query
@@ -154,8 +161,19 @@ class ThreeFragment : Fragment() {
     }
 
 
-    fun sendSearchRequest() {
-        val query = makeQuery(binding.searchText.text.toString())
+    fun sendSearchRequest(isSame : Boolean) {
+        if(!isSame) {
+            // 모든 필터를 비웁니다.
+            filter.clear()
+
+            // 모든 버튼의 색깔을 회색으로 변경합니다.
+            for ((_, buttons) in buttonMap) {
+                buttons.forEach { it.setBackgroundColor(Color.GRAY) }
+            }
+            filter["sort"] = mutableSetOf("인기순")
+            buttonMap["sort"]?.find { it.text == "인기순" }?.setBackgroundColor(Color.WHITE)
+        }
+        val query = makeQuery(binding.searchText.text.toString(), isSame)
         changeButton(query)
         serverCommu.sendRequest(query, "search", {result ->
             Log.d("Result","${result}")
@@ -300,6 +318,11 @@ class ThreeFragment : Fragment() {
                 } else {
                     button.setBackgroundColor(Color.GRAY)
                 }
+            }
+        }
+        for ((group, buttons) in buttonMap) {
+            if (!newFilter.has(group)) {
+                buttons.forEach { it.setBackgroundColor(Color.GRAY) }
             }
         }
         //TODO: 전체가 포함되면 싹다 색칠, 싹다 색칠되면 전체로 변경

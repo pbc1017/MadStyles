@@ -137,10 +137,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:orientation="horizontal">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="가격대"/>
+                    android:text="선호 가격대" />
                 <HorizontalScrollView
                     android:layout_width="0dp"
                     android:layout_weight="1"

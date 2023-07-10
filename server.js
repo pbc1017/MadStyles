@@ -19,8 +19,12 @@ app.post('/recommend/:idx',async (req,res)=>{
     fashiondata=client.db('Fashion').collection('Clothes');
     if(req.params.idx==0)
       result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(10).toArray();
-    else if(req.params.idx==1)
-      result= await fashiondata.find({gender:user[0].gender,color:user[0].prefer.color}).sort({"rank":-1}).limit(10).toArray();
+    else if(req.params.idx==1){
+      if(user[0].prefer.color=="전체")
+        result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(10).toArray();
+      else
+        result= await fashiondata.find({gender:user[0].gender,color:user[0].prefer.color}).sort({"rank":-1}).limit(10).toArray();
+    }
     else{
       kinds=["상의","바지","아우터","신발","가방","모자"];
       result= await fashiondata.find({kind:kinds[Math.floor(Math.random()*kinds.length)]}).sort({"rank":-1}).limit(10).toArray();
@@ -111,6 +115,7 @@ app.post('/createaccount',async (req,res)=>{
   try{
     await client.connect();
     userdata=client.db('Users').collection('person');
+    console.log(req.body)
     const result=await userdata.find({id:req.body.id}).toArray();
     if(result.length>0)
     {

@@ -98,7 +98,7 @@ app.post('/getcartitems',async(req,res)=>{
     const user=await userdata.find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
     let result=[]
-    for(var id of user[0].cart)
+    for(var item of user[0].cart)
     {
       const item=await fashiondata.find({id:id}).toArray();
       result.push(item[0])
@@ -107,7 +107,42 @@ app.post('/getcartitems',async(req,res)=>{
   }
   finally
   {
-    // client.close();
+  }
+});
+
+/*
+{
+  id:userid,
+  item:{
+    id:clothesid
+    count:n
+  }
+}
+*/
+app.post('/addcart',async(req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+   // const user=await userdata.find(req.body.id).toArray();
+    await userdata.updateOne({id:req.body.id},{$push:{cart:req.body.item}})
+    res.json("OK")
+  }
+  finally
+  {
+  }
+});
+
+
+app.post('/deletecart',async(req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+   // const user=await userdata.find(req.body.id).toArray();
+    await userdata.updateOne({id:req.body.id},{$pull:{cart:req.body.item}})
+    res.json("OK")
+  }
+  finally
+  {
   }
 });
 
@@ -115,7 +150,6 @@ app.post('/createaccount',async (req,res)=>{
   try{
     await client.connect();
     userdata=client.db('Users').collection('person');
-    console.log(req.body)
     const result=await userdata.find({id:req.body.id}).toArray();
     if(result.length>0)
     {
@@ -142,7 +176,7 @@ app.post('/getaiimage',async(req,res)=>{
     responseType:'stream',
     headers:{'ngrok-skip-browser-warning': 1}
   }).then(response=>{
-    response.data.pipe(fs.createWriteStream('./result/img.png'))
+    response.data.pipe(fs.createWriteStream('./result/img'+Date.now()+".png"))
     response.data.on('end',()=>{
       res.set('Content-Type','image/gif')
       fs.createReadStream('./result/img.png').pipe(res)
@@ -198,7 +232,7 @@ app.post('/search', async (req, res) => {
           dbQuery[key] = { $in: query[key] };
         }
     }
-    console.log(dbQuery)
+    // console.log(dbQuery)
 
     await client.connect();
     userdata=client.db('Fashion').collection('Clothes');

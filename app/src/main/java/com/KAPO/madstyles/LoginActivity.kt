@@ -87,6 +87,8 @@ class LoginActivity : AppCompatActivity() {
             pref.put("color", prefer["색상"]?.get(0))
             pref.put("pRange", prefer["가격대"]?.get(0))
             user.put("prefer",pref)
+            val cart=JSONArray()
+            user.put("cart",cart)
             Log.d("Item",user.toString())
             thread(start=true){
 

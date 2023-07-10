@@ -52,7 +52,7 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2) : RecyclerVi
         holder.rank.text=item.rank.toString()
         holder.name.text = item.name
         holder.brand.text = item.brand
-        holder.price.text = item.price.toString()
+        holder.price.text = item.price.toString()+"원"
         Glide.with(holder.image.context)
             .load(item.imgUrl)
             .into(holder.image)

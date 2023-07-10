@@ -17,6 +17,17 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/labelHome">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
     <TextView
         android:id="@+id/txtrecommend1"
         android:layout_width="wrap_content"
@@ -26,8 +37,6 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginTop="20dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/labelHome"
         />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -35,9 +44,43 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/txtrecommend1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+/>
+        <TextView
+            android:id="@+id/txtrecommend2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="당신을 위한 추천"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recommend_view_2"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:orientation="horizontal"
+            />
+        <TextView
+            android:id="@+id/txtrecommend3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="당신을 위한 추천"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recommend_view_3"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:orientation="horizontal"
+            />
+    </LinearLayout>
+    </ScrollView>
 
 
 

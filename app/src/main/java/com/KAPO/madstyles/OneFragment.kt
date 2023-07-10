@@ -18,9 +18,11 @@ import kotlin.concurrent.thread
 
 class OneFragment : Fragment() {
     private lateinit var binding: FragmentOneBinding
-    private lateinit var itemAdapter: ItemAdapter
+    private lateinit var itemAdapter1: ItemAdapter
+    private lateinit var itemAdapter2: ItemAdapter
+    private lateinit var itemAdapter3: ItemAdapter
     var json:String=""
-    val items = mutableListOf<Item>()
+    val items = listOf(mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -38,31 +40,45 @@ class OneFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding= FragmentOneBinding.bind(view)
-        binding.txtrecommend1.text="${(activity as MainActivity).getID()}에게 추천하는 아이템"
-        itemAdapter= ItemAdapter(items,1)
-        view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter
-        val linmanager=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
-        view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager
         val id = (activity as MainActivity).getID()
-        Requestrecommend(id)
+        val gender=(activity as MainActivity).getgender()
 
+        binding.txtrecommend1.text="${id}에게 추천하는 ${gender}아이템"
+        itemAdapter1= ItemAdapter(items[0],1)
+        view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter1
+        val linmanager1=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+        view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager1
+        Requestrecommend(id,0)
+
+        binding.txtrecommend2.text="${id}의 취향에 따른 추천 아이템"
+        itemAdapter2=ItemAdapter(items[1],1)
+        val linmanager2=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+        view.findViewById<RecyclerView>(R.id.recommend_view_2).adapter=itemAdapter2
+        view.findViewById<RecyclerView>(R.id.recommend_view_2).layoutManager=linmanager2
+        Requestrecommend(id,1)
+
+        itemAdapter3= ItemAdapter(items[2],1)
+        val linmanager3=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+        view.findViewById<RecyclerView>(R.id.recommend_view_3).adapter=itemAdapter3
+        view.findViewById<RecyclerView>(R.id.recommend_view_3).layoutManager=linmanager3
+        Requestrecommend(id,2)
 
     }
 
-    private fun Requestrecommend(id:String) {
+    private fun Requestrecommend(id:String,kind:Int) {
         val QueryObj= JSONObject()
         QueryObj.put("id",id)
         thread(start=true)
         {
-            serverCommu.sendRequest(QueryObj, "recommend", {result ->
+            serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
                 json = result
                 Log.d("RECOMMEND","${json}")
-                items.clear()
+                items[kind].clear()
                 val jsonArray = JSONArray(json)
 
                 for (i in 0 until jsonArray.length()) {
                     val jsonObj = jsonArray.getJSONObject(i)
-                    items.add(
+                    items[kind].add(
                         Item(
                             id = jsonObj.getInt("id"),
                             name = jsonObj.getString("name"),
@@ -75,7 +91,14 @@ class OneFragment : Fragment() {
                     )
                 }
                 requireActivity().runOnUiThread{
-                    itemAdapter.notifyDataSetChanged()
+                    when(kind){
+                        0->itemAdapter1.notifyDataSetChanged()
+                        1->itemAdapter2.notifyDataSetChanged()
+                        else->{
+                            binding.txtrecommend3.text="${id}님, 이런 아이템 어떠세요?"
+                            itemAdapter3.notifyDataSetChanged()}
+                    }
+
                 }
             }, {result ->
                 Log.d("Result","${result}")

@@ -11,18 +11,26 @@ var server=require('http').createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
-app.post('/recommend',async (req,res)=>{
+app.post('/recommend/:idx',async (req,res)=>{
   try{
-    await client.connect();
+      await client.connect();
     userdata=client.db('Users').collection('person');
     const user=await userdata.find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
-    result= await fashiondata.find(user[0].prefer).sort({"rank":-1}).limit(10).toArray();
+    if(req.params.idx==0)
+      result= await fashiondata.find({gender:user[0].gender}).sort({"rank":-1}).limit(10).toArray();
+    else if(req.params.idx==1)
+      result= await fashiondata.find({gender:user[0].gender,color:user[0].prefer.color}).sort({"rank":-1}).limit(10).toArray();
+    else{
+      kinds=["상의","바지","아우터","신발","가방","모자"];
+      result= await fashiondata.find({kind:kinds[Math.floor(Math.random()*kinds.length)]}).sort({"rank":-1}).limit(10).toArray();
+    }
     res.json(result);
   }
   finally
   {
-    client.close();
+  //   if(req.params.idx==2)
+  //   client.close();
     
   }
 });
@@ -39,7 +47,7 @@ app.post('/ranking/:pgnum',async (req,res)=>{
   }
   finally
   {
-    client.close();
+    // client.close();
     
   }
 });
@@ -61,7 +69,7 @@ app.post('/login',async (req,res)=>{
   }
   finally
   {
-    client.close();
+    // client.close();
   }
 
 });
@@ -75,7 +83,7 @@ app.post('/updateaccount',async(req,res)=>{
   }
   finally
   {
-    client.close();
+    // client.close();
   }
 });
 
@@ -95,7 +103,7 @@ app.post('/getcartitems',async(req,res)=>{
   }
   finally
   {
-    client.close();
+    // client.close();
   }
 });
 
@@ -116,7 +124,7 @@ app.post('/createaccount',async (req,res)=>{
   }
   finally
   {
-    client.close();
+    // client.close();
   }
    
 });

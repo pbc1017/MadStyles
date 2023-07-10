@@ -3,28 +3,13 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const express=require('express');
 const axios=require("axios");
 const cheerio=require("cheerio");
+const fs=require('fs')
 // const prompt=require('prompt-sync')({singint:true});
 
 var app=express();
 var server=require('http').createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({extended : false}));
-
-
-// app.post('/createid',async (req,res)=>{
-//   try{
-//     await client.connect();
-//     userdata=client.db('Users').collection('person');
-//     await userdata.insertOne(req.body);
-//   }
-//   finally
-//   {
-//     client.close();
-//     res.json("OK");
-//   }
-   
-// });
-
 
 app.post('/recommend',async (req,res)=>{
   try{
@@ -81,6 +66,80 @@ app.post('/login',async (req,res)=>{
 
 });
 
+app.post('/updateaccount',async(req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    await userdata.updateOne({id:req.body.id},{$set:req.body.data})
+    res.json("OK");
+  }
+  finally
+  {
+    client.close();
+  }
+});
+
+app.post('/getcartitems',async(req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    const user=await userdata.find(req.body).toArray();
+    fashiondata=client.db('Fashion').collection('Clothes');
+    let result=[]
+    for(var id of user[0].cart)
+    {
+      const item=await fashiondata.find({id:id}).toArray();
+      result.push(item[0])
+    }
+    res.json(result);
+  }
+  finally
+  {
+    client.close();
+  }
+});
+
+app.post('/createaccount',async (req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    const result=await userdata.find({id:req.body.id}).toArray();
+    if(result.length>0)
+    {
+      res.json("exist");
+    }
+    else
+    {
+      await userdata.insertOne(req.body);
+      res.json("OK");
+    }
+  }
+  finally
+  {
+    client.close();
+  }
+   
+});
+
+app.post('/getaiimage',async(req,res)=>{
+  axios({
+    method:'post',
+    url:'https://a40c-34-124-255-123.ngrok-free.app/getimg',
+    data:req.body,
+    responseType:'stream',
+    headers:{'ngrok-skip-browser-warning': 1}
+  }).then(response=>{
+    response.data.pipe(fs.createWriteStream('./result/img.png'))
+    response.data.on('end',()=>{
+      res.set('Content-Type','image/gif')
+      fs.createReadStream('./result/img.png').pipe(res)
+    })
+  })
+  .catch(err=>{
+    console.log(err);
+  })
+  
+})
 /*
 app.get('/ranking/:name/:id',async (req,res)=>{
     if(req.params.name=="musinsa")
@@ -111,9 +170,6 @@ const client = new MongoClient(uri, {
 });
 
 function main() {
-
-    // Connect the client to the server	(optional starting in v4.7)
-    //.toArray()
     //await collection.updateOne(QUERYDATA},{$set:{CHANGEDATA}})
     console.log("Server On");
 

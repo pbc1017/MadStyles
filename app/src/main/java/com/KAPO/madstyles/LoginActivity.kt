@@ -33,6 +33,7 @@ import kotlin.concurrent.thread
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
+    private var initTime = 0L
     val buttonMap: MutableMap<String, MutableList<Button>> = mutableMapOf()
     val prefer: MutableMap<String, MutableList<String>> = mutableMapOf()
     val filterButton = arrayOf<Array<String>>(
@@ -159,7 +160,16 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-
+        if (System.currentTimeMillis() - initTime > 3000) {
+            Toast.makeText(
+                this, "종료하려면 한번 더 누르세요!",
+                Toast.LENGTH_SHORT
+            ).show()
+            initTime = System.currentTimeMillis()
+        } else {
+            ActivityCompat.finishAffinity(this)
+            System.exit(0)
+        }
     }
 
     override fun onResume() {

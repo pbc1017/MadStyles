@@ -114,7 +114,7 @@ class FourFragment : Fragment() {
                     viewholder.checkbox.isChecked=true
                 }
                 totalcount=counts.sum()
-                binding.Txttotalselected.text="총 ${totalcount}개"
+                binding.Txttotalselected.text="전체 ${totalcount}개"
                 binding.Txttotalcount.text="총 ${totalcount}개"
                 for(i in 0 until items.size){
                     total+=items[i].price*counts[i]
@@ -128,7 +128,7 @@ class FourFragment : Fragment() {
                 }
                 totalcount=0
                 total=0
-                binding.Txttotalselected.text="총 ${totalcount}개"
+                binding.Txttotalselected.text="전체 ${totalcount}개"
                 binding.Txttotalcount.text="총 ${totalcount}개"
                 binding.txttotal.text="${total} 원"
                 binding.btnPay.text="${total}원 결제하기"
@@ -144,6 +144,7 @@ class FourFragment : Fragment() {
             Log.d("Result","${result}")
             json = result
             items.clear()
+            counts.clear()
             val jsonArray = JSONArray(json)
 
             for (i in 0 until jsonArray.length()) {
@@ -164,10 +165,10 @@ class FourFragment : Fragment() {
             requireActivity().runOnUiThread{
                 binding.itemchk.isChecked=true
                 totalcount=counts.sum()
-                binding.Txttotalselected.text="총 ${totalcount}개"
+                binding.Txttotalselected.text="전체 ${totalcount}개"
                 binding.Txttotalcount.text="총 ${totalcount}개"
                 for(i in 0 until items.size){
-                    total+=items[i].price*counts[i]
+                    total=items[i].price*counts[i]
                 }
                 binding.txttotal.text="${total}원"
                 binding.btnPay.text="${total}원 결제하기"

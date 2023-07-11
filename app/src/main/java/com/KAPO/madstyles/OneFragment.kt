@@ -84,48 +84,46 @@ class OneFragment : Fragment() {
 
     private fun Requestrecommend(id:String,kind:Int):CompletableFuture<Unit> {
         return CompletableFuture.supplyAsync {
-
-
             val QueryObj= JSONObject()
             QueryObj.put("id",id)
-            thread(start=true)
-            {
-                serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
-                    json = result
-                    Log.d("RECOMMEND","${json}")
-                    items[kind].clear()
-                    val jsonArray = JSONArray(json)
 
-                    for (i in 0 until jsonArray.length()) {
-                        val jsonObj = jsonArray.getJSONObject(i)
-                        items[kind].add(
-                            Item(
-                                id = jsonObj.getInt("id"),
-                                name = jsonObj.getString("name"),
-                                brand = jsonObj.getString("brand"),
-                                price = jsonObj.getInt("price"),
-                                imgUrl = jsonObj.getString("imageUrl"),
-                                color=jsonObj.getString("color"),
-                                rank=jsonObj.getInt("rank")
+            synchronized(this) {
+                thread(start=true) {
+                    serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
+                        json = result
+                        Log.d("RECOMMEND","${json}")
+                        items[kind].clear()
+                        val jsonArray = JSONArray(json)
+
+                        for (i in 0 until jsonArray.length()) {
+                            val jsonObj = jsonArray.getJSONObject(i)
+                            items[kind].add(
+                                Item(
+                                    id = jsonObj.getInt("id"),
+                                    name = jsonObj.getString("name"),
+                                    brand = jsonObj.getString("brand"),
+                                    price = jsonObj.getInt("price"),
+                                    imgUrl = jsonObj.getString("imageUrl"),
+                                    color=jsonObj.getString("color"),
+                                    rank=jsonObj.getInt("rank")
+                                )
                             )
-                        )
-                    }
-                    requireActivity().runOnUiThread{
-                        when(kind){
-                            0->itemAdapter1.notifyDataSetChanged()
-                            1->itemAdapter2.notifyDataSetChanged()
-                            else->{
-                                binding.txtrecommend3.text="${id}님, 이런 아이템 어떠세요?"
-                                itemAdapter3.notifyDataSetChanged()}
                         }
+                        requireActivity().runOnUiThread{
+                            when(kind){
+                                0->itemAdapter1.notifyDataSetChanged()
+                                1->itemAdapter2.notifyDataSetChanged()
+                                else->{
+                                    binding.txtrecommend3.text="${id}님, 이런 아이템 어떠세요?"
+                                    itemAdapter3.notifyDataSetChanged()}
+                            }
 
-                    }
-                }, {result ->
-                    Log.d("Result","${result}")
-                })
+                        }
+                    }, {result ->
+                        Log.d("Result","${result}")
+                    })
+                }
             }
         }
-
     }
-
 }

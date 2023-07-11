@@ -1,16 +1,20 @@
 package com.KAPO.madstyles
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.KAPO.madstyles.FiveFragment
 import com.KAPO.madstyles.FourFragment
 import com.KAPO.madstyles.OneFragment
@@ -30,7 +34,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private var initTime = 0L
     var id: String? = ""

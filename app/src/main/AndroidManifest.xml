@@ -23,8 +23,11 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <data android:host="oauth"
+                    android:scheme="kakao842a58ee39301eebd3d10d93d94bec68"/>
             </intent-filter>
         </activity>
         <activity

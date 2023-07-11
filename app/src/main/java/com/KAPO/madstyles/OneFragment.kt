@@ -16,7 +16,7 @@ import com.KAPO.madstyles.databinding.FragmentOneBinding
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.concurrent.thread
-
+import java.util.concurrent.CompletableFuture
 
 
 class OneFragment : Fragment() {
@@ -27,10 +27,6 @@ class OneFragment : Fragment() {
     private lateinit var itemAdapter4: ItemAdapter
     var json:String=""
     val items = listOf(mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>())
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,66 +59,72 @@ class OneFragment : Fragment() {
         view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter1
         val linmanager1=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager1
-        Requestrecommend(id,0)
 
         binding.txtrecommend2.text="${id}의 취향에 따른 추천 아이템"
         itemAdapter2=ItemAdapter(items[1],1,resultLauncher)
         val linmanager2=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_2).adapter=itemAdapter2
         view.findViewById<RecyclerView>(R.id.recommend_view_2).layoutManager=linmanager2
-        Requestrecommend(id,1)
 
         itemAdapter3= ItemAdapter(items[2],1,resultLauncher)
         val linmanager3=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_3).adapter=itemAdapter3
         view.findViewById<RecyclerView>(R.id.recommend_view_3).layoutManager=linmanager3
-        Requestrecommend(id,2)
 
         itemAdapter4= ItemAdapter(items[3],1,resultLauncher) //item을 어떻게 가져오지?
         val linmanager4=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recent_view).adapter=itemAdapter4
         view.findViewById<RecyclerView>(R.id.recent_view).layoutManager=linmanager4
 
+        Requestrecommend(id,0)
+            .thenApply {Requestrecommend(id,1)}
+            .thenAccept{Requestrecommend(id,2)}
+            //.thenAccept{Requestrecommend(id,3)}
+
     }
 
-    private fun Requestrecommend(id:String,kind:Int) {
-        val QueryObj= JSONObject()
-        QueryObj.put("id",id)
-        thread(start=true)
-        {
-            serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
-                json = result
-                Log.d("RECOMMEND","${json}")
-                items[kind].clear()
-                val jsonArray = JSONArray(json)
+    private fun Requestrecommend(id:String,kind:Int):CompletableFuture<Unit> {
+        return CompletableFuture.supplyAsync {
 
-                for (i in 0 until jsonArray.length()) {
-                    val jsonObj = jsonArray.getJSONObject(i)
-                    items[kind].add(
-                        Item(
-                            id = jsonObj.getInt("id"),
-                            name = jsonObj.getString("name"),
-                            brand = jsonObj.getString("brand"),
-                            price = jsonObj.getInt("price"),
-                            imgUrl = jsonObj.getString("imageUrl"),
-                            color=jsonObj.getString("color"),
-                            rank=jsonObj.getInt("rank")
+
+            val QueryObj= JSONObject()
+            QueryObj.put("id",id)
+            thread(start=true)
+            {
+                serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
+                    json = result
+                    Log.d("RECOMMEND","${json}")
+                    items[kind].clear()
+                    val jsonArray = JSONArray(json)
+
+                    for (i in 0 until jsonArray.length()) {
+                        val jsonObj = jsonArray.getJSONObject(i)
+                        items[kind].add(
+                            Item(
+                                id = jsonObj.getInt("id"),
+                                name = jsonObj.getString("name"),
+                                brand = jsonObj.getString("brand"),
+                                price = jsonObj.getInt("price"),
+                                imgUrl = jsonObj.getString("imageUrl"),
+                                color=jsonObj.getString("color"),
+                                rank=jsonObj.getInt("rank")
+                            )
                         )
-                    )
-                }
-                requireActivity().runOnUiThread{
-                    when(kind){
-                        0->itemAdapter1.notifyDataSetChanged()
-                        1->itemAdapter2.notifyDataSetChanged()
-                        else->{
-                            binding.txtrecommend3.text="${id}님, 이런 아이템 어떠세요?"
-                            itemAdapter3.notifyDataSetChanged()}
                     }
+                    requireActivity().runOnUiThread{
+                        when(kind){
+                            0->itemAdapter1.notifyDataSetChanged()
+                            1->itemAdapter2.notifyDataSetChanged()
+                            else->{
+                                binding.txtrecommend3.text="${id}님, 이런 아이템 어떠세요?"
+                                itemAdapter3.notifyDataSetChanged()}
+                        }
 
-                }
-            }, {result ->
-                Log.d("Result","${result}")
-            })
+                    }
+                }, {result ->
+                    Log.d("Result","${result}")
+                })
+            }
         }
 
     }

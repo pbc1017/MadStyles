@@ -98,9 +98,10 @@ app.post('/getcartitems',async(req,res)=>{
     const user=await userdata.find(req.body).toArray();
     fashiondata=client.db('Fashion').collection('Clothes');
     let result=[]
-    for(var item of user[0].cart)
+    for(var e of user[0].cart)
     {
-      const item=await fashiondata.find({id:id}).toArray();
+      const item=await fashiondata.find({id:e.id}).toArray();
+      item[0].count=e.count
       result.push(item[0])
     }
     res.json(result);
@@ -139,6 +140,19 @@ app.post('/deletecart',async(req,res)=>{
     userdata=client.db('Users').collection('person');
    // const user=await userdata.find(req.body.id).toArray();
     await userdata.updateOne({id:req.body.id},{$pull:{cart:req.body.item}})
+    res.json("OK")
+  }
+  finally
+  {
+  }
+});
+
+app.post('/setcart',async(req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+   // const user=await userdata.find(req.body.id).toArray();
+    await userdata.updateOne({id:req.body.id},{$set:{cart:req.body.cart}})
     res.json("OK")
   }
   finally

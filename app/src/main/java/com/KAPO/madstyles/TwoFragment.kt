@@ -40,15 +40,22 @@ data class Item(
 class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val resultLauncher:ActivityResultLauncher<Intent>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
     val index=index
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val rank:TextView=itemView.findViewById(R.id.item_rank)
+            val rank: TextView = itemView.findViewById(R.id.item_rank)
+            val name: TextView = itemView.findViewById(R.id.item_name)
+            val brand: TextView = itemView.findViewById(R.id.item_brand)
+            val price: TextView = itemView.findViewById(R.id.item_price)
+            val image: ImageView = itemView.findViewById(R.id.item_image)
+
+    }
+
+    inner class CartItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.item_name)
-        val brand: TextView = itemView.findViewById(R.id.item_brand)
-        val price: TextView = itemView.findViewById(R.id.item_price)
-        val image: ImageView = itemView.findViewById(R.id.item_image)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
+            val view =LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
+
         return ItemViewHolder(view)
     }
 

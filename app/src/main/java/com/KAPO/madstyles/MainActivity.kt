@@ -32,6 +32,7 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import com.kakao.sdk.common.util.Utility
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
@@ -82,13 +83,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //TODO: 자동로그인 여부 확인
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivityForResult(intent, 10)
-
+        if(!intent.getBooleanExtra("Loginagain",false)) {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivityForResult(intent, 10)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if(intent.getBooleanExtra("Loginagain",false))
+        {
+            id = intent.getStringExtra("id")
+            gender=intent.getStringExtra("gender")
+            binding.viewpager.adapter = MyFragmentPagerAdapter(this)
+            TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
+                tabSetting(tab, position)
+            }.attach()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -102,6 +111,8 @@ class MainActivity : AppCompatActivity() {
             }.attach()
         }
     }
+
+
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {

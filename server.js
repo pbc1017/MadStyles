@@ -100,6 +100,7 @@ app.post('/getcartitems',async(req,res)=>{
     let result=[]
     for(var e of user[0].cart)
     {
+      console.log(e)
       const item=await fashiondata.find({id:e.id}).toArray();
       item[0].count=e.count
       result.push(item[0])
@@ -187,13 +188,13 @@ app.post('/getDetail', async (req, res) => {
   const result=await itemData.find(req.body).toArray();
 
   const detailUrl = result[0].detail
-  console.log(detailUrl)
+  // console.log(detailUrl)
   const html = await axios.get(detailUrl); // Replace with the URL you're scraping
   const $ = cheerio.load(html.data);
   const imgSrcs = [];
   $('#detail_thumb .product_thumb li img').each((i, elem) => imgSrcs.push($(elem).attr('src')));
 
-  console.log({result: result[0], imgSrcs: imgSrcs })
+  // console.log({result: result[0], imgSrcs: imgSrcs })
   res.json({result: result[0], imgSrcs: imgSrcs });
 });
 

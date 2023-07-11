@@ -71,19 +71,27 @@ class FourFragment : Fragment() {
 
         binding.btnDelete.setOnClickListener {
             val deletelist= mutableListOf<Int>()
+            val deleteitemlist= mutableListOf<Item>()
             for(i in 0 until binding.cartview.childCount) {
                 val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
-                if(viewholder.checkbox.isChecked)
-                    deletelist.add(i)
+                if(viewholder.checkbox.isChecked) {
+                    deletelist.add(counts[i])
+                    deleteitemlist.add(items[i])
+                }
+                viewholder.checkbox.isChecked=false
             }
             deletelist.forEach {
-                counts.removeAt(it)
-                items.removeAt(it)
+                counts.remove(it)
+            }
+            deleteitemlist.forEach {
+                items.remove(it)
             }
             itemAdapter.notifyDataSetChanged()
-            for(i in 0 until binding.cartview.childCount) {
-                val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
-                viewholder.checkbox.isChecked=false
+            binding.cartview.post{
+                for(i in 0 until binding.cartview.childCount) {
+                    val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
+                    viewholder.checkbox.isChecked=false
+                }
             }
             binding.itemchk.isChecked=false
             totalcount=0
@@ -92,6 +100,11 @@ class FourFragment : Fragment() {
             binding.Txttotalcount.text="총 ${totalcount}개"
             binding.txttotal.text="${total} 원"
             binding.btnPay.text="${total}원 결제하기"
+
+            thread(start = true){
+                updateCart()
+            }
+
         }
         binding.itemchk.setOnClickListener {
             val checkbox = it as CheckBox
@@ -165,7 +178,27 @@ class FourFragment : Fragment() {
         })
     }
 
+    fun updateCart()
+    {
+        val UpdateObj= JSONObject()
+        UpdateObj.put("id",(activity as MainActivity).getID())
+        val cart=JSONArray()
+        for(i in 0 until items.size)
+        {
+            val item=JSONObject()
+            item.put("id",items[i].id)
+            item.put("count",counts[i])
+            cart.put(item)
+        }
+        //cart 잘 생성
+        UpdateObj.put("cart",cart)
+        serverCommu.sendRequest(UpdateObj, "setcart", {result ->
+            Log.d("Cartupdate result","${result}")
 
+        }, {result ->
+            Log.d("Err:","${result}")
+        })
+    }
 }
 
 class CartItemAdapter(private val items: MutableList<Item>,private val counts:MutableList<Int>, val context:FourFragment) : RecyclerView.Adapter<CartItemAdapter.ItemViewHolder>() {
@@ -216,6 +249,9 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
         }
         holder.inc.setOnClickListener {
             counts[position]++
+            thread(start = true){
+                context.updateCart()
+            }
             holder.count.text=counts[position].toString()
             if(holder.checkbox.isChecked)
             {
@@ -229,17 +265,24 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
         holder.dec.setOnClickListener {
             if (counts[position]>0){
                 counts[position]--
-            }
+                thread(start = true){
+                    context.updateCart()
+                }
+
             holder.count.text=counts[position].toString()
             if(holder.checkbox.isChecked){
                 context.totalcount--
                 context.total-=item.price
                 holder.price.text="${item.price*counts[position]}원"
                 updateNumbers()
+
+            }
             }
         }
         holder.image.setOnClickListener {
             val intent=Intent(it.context,DetailActivity::class.java)
+            intent.putExtra("itemId", item.id)
+            intent.putExtra("userId",(context.activity as MainActivity).getID())
             context.resultLauncher.launch(intent)
         }
     }

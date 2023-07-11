@@ -259,11 +259,11 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
                 context.updateCart()
             }
             holder.count.text=counts[position].toString()
+            holder.price.text="${item.price*counts[position]}원"
             if(holder.checkbox.isChecked)
             {
                 context.totalcount++
                 context.total+=item.price
-                holder.price.text="${item.price*counts[position]}원"
                 updateNumbers()
             }
 
@@ -276,10 +276,11 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
                 }
 
             holder.count.text=counts[position].toString()
+            holder.price.text="${item.price*counts[position]}원"
             if(holder.checkbox.isChecked){
                 context.totalcount--
                 context.total-=item.price
-                holder.price.text="${item.price*counts[position]}원"
+
                 updateNumbers()
 
             }

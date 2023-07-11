@@ -37,13 +37,11 @@ class OneFragment : Fragment() {
 
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding= FragmentOneBinding.bind(view)
         val id = (activity as MainActivity).getID()
         val gender=(activity as MainActivity).getgender()
-
 
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -55,6 +53,7 @@ class OneFragment : Fragment() {
                 }
             }
         }
+
         binding.txtrecommend1.text="${id}에게 추천하는 ${gender}아이템"
         itemAdapter1= ItemAdapter(items[0],1, resultLauncher, id)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter1

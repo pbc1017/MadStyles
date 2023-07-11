@@ -183,6 +183,7 @@ app.post('/createaccount',async (req,res)=>{
 });
 
 app.post('/getDetail', async (req, res) => {
+  await client.connect();
   itemData=client.db('Fashion').collection('Clothes');
   const result=await itemData.find(req.body).toArray();
 

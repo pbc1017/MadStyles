@@ -100,7 +100,6 @@ app.post('/getcartitems',async(req,res)=>{
     let result=[]
     for(var e of user[0].cart)
     {
-      console.log(e)
       const item=await fashiondata.find({id:e.id}).toArray();
       item[0].count=e.count
       result.push(item[0])

@@ -199,6 +199,11 @@ class FourFragment : Fragment() {
             Log.d("Err:","${result}")
         })
     }
+
+    override fun onResume() {
+        super.onResume()
+        requestCart((activity as MainActivity).getID())
+    }
 }
 
 class CartItemAdapter(private val items: MutableList<Item>,private val counts:MutableList<Int>, val context:FourFragment) : RecyclerView.Adapter<CartItemAdapter.ItemViewHolder>() {

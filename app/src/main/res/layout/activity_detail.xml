@@ -171,20 +171,29 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <LinearLayout
+            android:id="@+id/buy_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
             <Button
+                android:id="@+id/close_button"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"/>
+            <Button
+                android:id="@+id/option_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="옵션선택"/>
             <Button
+                android:id="@+id/size_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Free Size"
                 android:visibility="gone"/>
             <LinearLayout
+                android:id="@+id/size"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -201,14 +210,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <Button
+                        android:id="@+id/minus_button"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:text="-"/>
                     <TextView
+                        android:id="@+id/count"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:text="1"/>
                     <Button
+                        android:id="@+id/plus_button"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:text="-"/>
@@ -218,10 +230,12 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
                 <TextView
+                    android:id="@+id/item_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="18,000원"/>
                 <Button
+                    android:id="@+id/cancel_button"
                     android:layout_width="30dp"
                     android:layout_height="30dp"/>
             </LinearLayout>
@@ -230,17 +244,19 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
+                    android:id="@+id/total_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="상품 1개"/>
+                    android:text="상품 0개"/>
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"/>
                 <TextView
+                    android:id="@+id/total_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="18,000원"/>
+                    android:text="0원"/>
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -248,11 +264,13 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <Button
+                android:id="@+id/buy_button"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text = "구매하기"/>
             <Button
+                android:id="@+id/add_cart_button"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"

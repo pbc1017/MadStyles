@@ -276,6 +276,43 @@ app.post('/search', async (req, res) => {
     client.close();
   }
 });
+
+app.post('/addReview', async (req, res) => {
+    await client.connect();
+    const itemData = client.db('Fashion').collection('Clothes');
+    
+    const review = req.body.review;
+    const itemId = req.body.itemId;
+
+    await itemData.findOneAndUpdate(
+        { id: itemId },
+        { $pull: { review: { userId: review.userId } } }
+    );
+
+    const result = await itemData.findOneAndUpdate(
+        { id: itemId },
+        { $push: { review: review } },
+        { returnDocument: "after" }
+    );
+
+    res.json(result);
+});
+
+app.post('/deleteReview', async (req, res) => {
+    await client.connect();
+    const itemData = client.db('Fashion').collection('Clothes');
+
+    const itemId = req.body.itemId;
+    const reviewId = req.body.reviewId;
+
+    const result = await itemData.findOneAndUpdate(
+        { id: itemId },
+        { $pull: { reviews: { id: reviewId } } },
+        { returnDocument: "after" }
+    );
+
+    res.json(result);
+});
 /*
 app.get('/ranking/:name/:id',async (req,res)=>{
     if(req.params.name=="musinsa")

@@ -1,6 +1,8 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.AttributeSet
@@ -8,15 +10,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.KAPO.madstyles.databinding.ActivityDetailBinding
 import com.bumptech.glide.Glide
 import org.json.JSONObject
 import kotlin.concurrent.thread
+
+data class Review(val userId: String, val rating: Int, val text: String)
 
 class ViewPagerAdapter(private val images: List<String>) : RecyclerView.Adapter<ViewPagerAdapter.PagerViewHolder>() {
 
@@ -37,25 +44,128 @@ class ViewPagerAdapter(private val images: List<String>) : RecyclerView.Adapter<
     override fun getItemCount(): Int = images.size
 }
 
+class ReviewAdapter(private val reviews: MutableList<Review>, val binding: ActivityDetailBinding, val userId: String) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
+
+    inner class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val reviewDeleteButton: Button = itemView.findViewById(R.id.review_delete_button)
+        val reviewEditButton: Button = itemView.findViewById(R.id.review_edit_button)
+        val userId: TextView = itemView.findViewById(R.id.user_id)
+        val rating: TextView = itemView.findViewById(R.id.rating)
+        val text: TextView = itemView.findViewById(R.id.text)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
+        return ReviewViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.review_item, parent, false))
+    }
+
+    override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
+        val review = reviews[position]
+        holder.userId.text = review.userId
+        holder.rating.text = review.rating.toString()
+        holder.text.text = review.text
+
+        if (review.userId == userId) {
+            binding.inputReview.visibility=View.GONE
+            holder.reviewEditButton.visibility = View.VISIBLE
+            holder.reviewDeleteButton.visibility = View.VISIBLE
+        } else {
+            binding.inputReview.visibility=View.VISIBLE
+            holder.reviewEditButton.visibility = View.GONE
+            holder.reviewDeleteButton.visibility = View.GONE
+        }
+
+        holder.reviewEditButton.setOnClickListener() {
+            binding.inputReview.visibility=View.VISIBLE
+//            val starButtons = arrayOf(binding.star1,binding.star2,binding.star3,binding.star4,binding.star5)
+//            starButtons.forEachIndexed { i, star ->
+//                star.setColorFilter(if (i < holder.rating.text.toString().toInt()) Color.YELLOW else Color.GRAY)
+//            }
+            binding.reviewEditText.setText(holder.text.text.toString())
+            reviews.remove(review)
+            notifyDataSetChanged()
+        }
+        holder.reviewDeleteButton.setOnClickListener() {
+            binding.inputReview.visibility=View.VISIBLE
+            val starButtons = arrayOf(binding.star1,binding.star2,binding.star3,binding.star4,binding.star5)
+            starButtons.forEachIndexed { i, star ->
+                star.setColorFilter(Color.GRAY)
+            }
+            binding.reviewEditText.setText("")
+            //TODO: 삭제
+            reviews.remove(review)
+            notifyDataSetChanged()
+        }
+    }
+    override fun getItemCount(): Int = reviews.size
+}
+
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
     private lateinit var viewPager: ViewPager2
-    var images = mutableListOf<String>()
-    val adapter = ViewPagerAdapter(images)
+    private var images = mutableListOf<String>()
+    private var adapter = ViewPagerAdapter(images)
+    private var reviews = mutableListOf<Review>()
+    private lateinit var reviewAdapter : ReviewAdapter
+
+    private val starButtons: Array<ImageView> by lazy {
+        arrayOf(
+            binding.star1,
+            binding.star2,
+            binding.star3,
+            binding.star4,
+            binding.star5
+        )
+    }
+    private var rating = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val itemId = intent.getIntExtra("itemId", 0)
+        val userId = intent.getStringExtra("userId").toString()
+
+        reviewAdapter = ReviewAdapter(reviews, binding, userId)
+
+        requestDetail(itemId)
+
         viewPager = findViewById(R.id.viewPager)
         viewPager.adapter = adapter
         val pageNumber: TextView = binding.pageNumber
 
-        val itemId = intent.getIntExtra("itemId", 0)
-        val userId = intent.getStringExtra("userId")
-        requestDetail(itemId)
+        val reviewRecyclerView = binding.reviewRecyclerView
+        reviewRecyclerView.layoutManager = LinearLayoutManager(this)
+        reviewRecyclerView.adapter = reviewAdapter
 
         Log.d("ItemID","userID ${userId} itemID ${itemId}")
+
+        val reviewEditText = binding.reviewEditText
+        val submitButton = binding.submitButton
+
+        starButtons.forEachIndexed { index, imageView ->
+            imageView.setOnClickListener {
+                rating = index + 1
+                starButtons.forEachIndexed { i, star ->
+                    star.setColorFilter(if (i < rating) Color.YELLOW else Color.GRAY)
+                }
+            }
+        }
+
+        submitButton.setOnClickListener {
+//            rating = 0
+//            starButtons.forEachIndexed { i, star ->
+//                Log.d("color",star.colorFilter.toString().toInt().toString())
+//                if (star.colorFilter.toString().toInt() == Color.YELLOW) rating += 1
+//            }
+            val reviewText = reviewEditText.text.toString()
+            if (reviewText.isNotEmpty() && rating > 0) {
+                val review = Review(userId.toString(), rating, reviewText)
+                sendReview(review, itemId)
+                //TODO: hideKeyboard()
+            } else {
+                Toast.makeText(this, "리뷰와 별점을 모두 남겨주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.backButton.setOnClickListener()
         {
@@ -105,7 +215,7 @@ class DetailActivity : AppCompatActivity() {
         binding.sizeButton.setOnClickListener()
         {
             if(sizeButtonState) {
-                //TODO: 토스트 이미 추가한 상품입니다.
+                Toast.makeText(this, "이미 추가한 상품입니다.",Toast.LENGTH_SHORT)
                 binding.sizeButton.visibility=View.GONE
             } else {
                 binding.size.visibility=View.VISIBLE
@@ -158,7 +268,7 @@ class DetailActivity : AppCompatActivity() {
                 requestCart(json)
                 binding.buyDetail.visibility=View.GONE
                 binding.addCartButton.visibility=View.GONE
-                //TODO: 토스트 장바구니에 상품을 담았습니다
+                Toast.makeText(this, "장바구니에 상품을 담았습니다.",Toast.LENGTH_SHORT)
 
                 binding.totalCount.text = "상품 0개"
                 binding.totalPrice.text = "0원"
@@ -167,7 +277,7 @@ class DetailActivity : AppCompatActivity() {
                 price = 0
 
             } else {
-                //TODO: 토스트 장바구니에 담을 상품이 없습니다
+                Toast.makeText(this, "장바구니에 담을 상품이 없습니다.",Toast.LENGTH_SHORT)
             }
         }
 
@@ -183,6 +293,29 @@ class DetailActivity : AppCompatActivity() {
                 pageNumber.text = "${position + 1}/${images.size}"
             }
         })
+    }
+    private fun sendReview(review: Review, itemId: Int) {
+        val json = JSONObject().apply {
+            put("itemId", itemId)
+            put("review", JSONObject().apply {
+                put("userId", review.userId)
+                put("rating", review.rating)
+                put("text", review.text)
+            })
+        }
+        thread(start = true) {
+            serverCommu.sendRequest(json, "addReview", { result ->
+                Log.d("Result", "${result}")
+                reviews.add(0, review)
+                runOnUiThread {
+                    reviewAdapter.notifyDataSetChanged()
+                    binding.inputReview.visibility=View.GONE
+                    Toast.makeText(this, "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }, { result ->
+                Log.d("Result", "${result}")
+            })
+        }
     }
     private fun requestCart(json:JSONObject) {
         thread(start = true)
@@ -217,8 +350,18 @@ class DetailActivity : AppCompatActivity() {
                     }
                 }
                 val item = json.getJSONObject("result")
+
+                val reviewsArray = item.getJSONArray("review")
+                for (i in 0 until reviewsArray.length()) {
+                    val reviewObject = reviewsArray.getJSONObject(i)
+                    val userId = reviewObject.getString("userId")
+                    val rating = reviewObject.getInt("rating")
+                    val text = reviewObject.getString("text")
+                    reviews.add(Review(userId, rating, text))
+                }
                 runOnUiThread {
                     adapter.notifyDataSetChanged()
+                    reviewAdapter.notifyDataSetChanged()
                     binding.kindText.text = item.getString("kind").toString()
                     binding.nameText.text = item.getString("name").toString()
                     binding.priceText.text = "${item.getInt("price")}원"
@@ -230,4 +373,11 @@ class DetailActivity : AppCompatActivity() {
             })
         }
     }
+//TODO:검색이 완료되면 키보드 숨기기
+//    fun hideKeyboard() {
+//        val inputMethodManager = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+//        // Check if no view has focus:
+//        val view = activity?.currentFocus ?: View(context)
+//        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+//    }
 }

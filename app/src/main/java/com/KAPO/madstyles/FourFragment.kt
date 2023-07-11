@@ -116,6 +116,7 @@ class FourFragment : Fragment() {
                 totalcount=counts.sum()
                 binding.Txttotalselected.text="전체 ${totalcount}개"
                 binding.Txttotalcount.text="총 ${totalcount}개"
+                total=0
                 for(i in 0 until items.size){
                     total+=items[i].price*counts[i]
                 }
@@ -167,8 +168,9 @@ class FourFragment : Fragment() {
                 totalcount=counts.sum()
                 binding.Txttotalselected.text="전체 ${totalcount}개"
                 binding.Txttotalcount.text="총 ${totalcount}개"
+                total=0
                 for(i in 0 until items.size){
-                    total=items[i].price*counts[i]
+                    total+=items[i].price*counts[i]
                 }
                 binding.txttotal.text="${total}원"
                 binding.btnPay.text="${total}원 결제하기"

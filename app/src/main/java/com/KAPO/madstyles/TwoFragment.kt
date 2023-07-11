@@ -37,7 +37,7 @@ data class Item(
     val rank:Int
 )
 
-class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val resultLauncher:ActivityResultLauncher<Intent>) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val resultLauncher:ActivityResultLauncher<Intent>,val userID: String) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
     val index=index
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val rank: TextView = itemView.findViewById(R.id.item_rank)
@@ -77,6 +77,8 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val 
         }
         holder.itemView.setOnClickListener() {
             val intent = Intent(it.context, DetailActivity::class.java)
+            intent.putExtra("itemId", item.id)
+            intent.putExtra("userId",userID)
             resultLauncher.launch(intent)
         }
     }
@@ -120,15 +122,15 @@ class TwoFragment : Fragment() {
         kindview.addView(createButton("가방"))
         kindview.addView(createButton("모자"))
 
+        val id = (activity as MainActivity).getID()
         recyclerView.layoutManager = GridLayoutManager(context, 2)
-        itemAdapter = ItemAdapter(items,0, resultLauncher)
+        itemAdapter = ItemAdapter(items,0, resultLauncher, id)
         recyclerView.adapter = itemAdapter
         val btnrank= view.findViewById<Button>(R.id.btngendertoggle)
         val btnprev=view.findViewById<Button>(R.id.btnprev)
         val btnnext=view.findViewById<Button>(R.id.btnnext)
         btnprev.isVisible=false
        btnrank.setOnClickListener {
-            val id = (activity as MainActivity).getID()
             btnrank.text=genderchange(btnrank.text.toString())
             pgnum=1
             //var gender=(activity as MainActivity).getgender()

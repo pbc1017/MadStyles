@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
     private var initTime = 0L
     var id: String? = ""
     var gender:String?=""
+    interface MainIdProvider {
+        fun getID(): Int
+    }
     fun getID(): String {
         return id.toString()
     }

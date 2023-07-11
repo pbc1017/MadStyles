@@ -46,21 +46,38 @@
                 <androidx.viewpager2.widget.ViewPager2
                     android:layout_width="0dp"
                     android:layout_height="0dp"
+                    android:id="@+id/viewPager"
                     app:layout_constraintDimensionRatio="1:1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
+                <TextView
+                    android:id="@+id/page_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1/1"
+                    android:textSize="20sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/viewPager"
+                    app:layout_constraintRight_toRightOf="@+id/viewPager"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
             <TextView
+                android:id="@+id/kind_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="바지"/>
             <TextView
+                android:id="@+id/name_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="글로시 와이드 진 워시드 블랙"
                 android:textSize="25sp"/>
+            <TextView
+                android:id="@+id/price_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="18000원"
+                android:textSize="20sp"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -74,6 +91,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
                 <TextView
+                    android:id="@+id/brand_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="000001 / Private Neighbors"/>
@@ -91,6 +109,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
                 <TextView
+                    android:id="@+id/gender_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2023 SS / 남성"/>
@@ -139,6 +158,7 @@
                     android:text="리뷰"
                     android:textSize="20sp"/>
                 <ListView
+                    android:id="@+id/review_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
             </LinearLayout>

@@ -50,10 +50,11 @@ class ThreeFragment : Fragment() {
                 }
             }
         }
+        val id = (activity as MainActivity).getID()
         binding = FragmentThreeBinding.inflate(inflater, container, false)
         recyclerView = binding.recyclerViewSearch
         recyclerView.layoutManager = GridLayoutManager(context, 2)
-        itemAdapter = ItemAdapter(items,3,resultLauncher)
+        itemAdapter = ItemAdapter(items,3,resultLauncher,id)
         recyclerView.adapter = itemAdapter
         val kindview=arrayOf<LinearLayout> (binding.kindview1,binding.kindview2,binding.kindview3,binding.kindview4,binding.kindview5)
 

@@ -182,6 +182,21 @@ app.post('/createaccount',async (req,res)=>{
    
 });
 
+app.post('/getDetail', async (req, res) => {
+  itemData=client.db('Fashion').collection('Clothes');
+  const result=await itemData.find(req.body).toArray();
+
+  const detailUrl = result[0].detail
+  console.log(detailUrl)
+  const html = await axios.get(detailUrl); // Replace with the URL you're scraping
+  const $ = cheerio.load(html.data);
+  const imgSrcs = [];
+  $('#detail_thumb .product_thumb li img').each((i, elem) => imgSrcs.push($(elem).attr('src')));
+
+  console.log({result: result[0], imgSrcs: imgSrcs })
+  res.json({result: result[0], imgSrcs: imgSrcs });
+});
+
 app.post('/getaiimage',async(req,res)=>{
   axios({
     method:'post',
@@ -200,7 +215,7 @@ app.post('/getaiimage',async(req,res)=>{
     console.log(err);
   })
   
-})
+});
 
 app.post('/search', async (req, res) => {
   try {

@@ -75,6 +75,8 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val 
             lp.width=500
             lp.height=790
             holder.rank.visibility=View.GONE
+        } else if (index == 3) {
+            holder.rank.visibility=View.GONE
         }
         holder.itemView.setOnClickListener() {
             val intent = Intent(it.context, DetailActivity::class.java)
@@ -202,23 +204,23 @@ class TwoFragment : Fragment() {
         }
     }
 
-    fun createButton(name:String):View{
-        val btn=Button(context)
-        //btn.id=ViewCompat.generateViewId()
-        btn.text=name
-        btn.layoutParams=LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT)
-        btn.setOnClickListener{
-            kind=name
-            thread(start=true)
-            {
-                pgnum=1
+    fun createButton(name: String): View {
+        val btn = Button(context)
+        btn.text = name
+        btn.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        btn.setBackgroundResource(R.drawable.round_button) // round_button를 배경으로 설정
+        (btn.layoutParams as LinearLayout.LayoutParams).setMargins(0,0,20,0)
+        btn.setOnClickListener {
+            kind = name
+            thread(start = true) {
+                pgnum = 1
                 requestRanking(view?.findViewById<Button>(R.id.btngendertoggle)?.text.toString())
             }
-
         }
-        btn.id=ViewCompat.generateViewId()
+        btn.id = ViewCompat.generateViewId()
         return btn
     }
+
     fun genderchange(gender:String):String{
         if (gender=="남자")
             return "여자"

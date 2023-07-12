@@ -2,6 +2,7 @@ package com.KAPO.madstyles
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -19,8 +20,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.KAPO.madstyles.databinding.FragmentFourBinding
 import com.bumptech.glide.Glide
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.IOException
 import kotlin.concurrent.thread
 
 class FourFragment : Fragment() {
@@ -106,6 +113,10 @@ class FourFragment : Fragment() {
             }
 
         }
+        binding.aiimageView.setOnClickListener {
+            binding.aiimageView.visibility=View.GONE
+        }
+        binding.progressBar.visibility=View.GONE
         binding.itemchk.setOnClickListener {
             val checkbox = it as CheckBox
             if (checkbox.isChecked) {
@@ -219,6 +230,7 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
         val checkbox:CheckBox=itemView.findViewById(R.id.itemchk)
         val inc:Button=itemView.findViewById(R.id.increase)
         val dec:Button=itemView.findViewById(R.id.decrease)
+        val getai:Button=itemView.findViewById(R.id.showaiimg)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -288,12 +300,49 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
             }
             }
         }
+        holder.getai.setOnClickListener {
+            context.binding.progressBar.visibility=View.VISIBLE
+
+            thread(start=true){
+                //val URL="http://172.20.31.68:80/getaiimage"
+                val URL="https://d391-192-249-19-234.ngrok-free.app/getaiimage"
+                val JSONobj=JSONObject().apply{
+                    put("user",(context.activity as MainActivity).getID())
+                    put("item",item.id)
+                }
+                val okHttpClient= OkHttpClient()
+                val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
+                val req=okhttp3.Request.Builder().url(URL).addHeader("ngrok-skip-browser-warning","123").post(body).build()
+                okHttpClient.newCall(req).enqueue(object: Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.d("PROBLEM",e.message.toString())
+                    }
+                    override fun onResponse(call: Call, response: okhttp3.Response) {
+                       val responseBody=response.body
+                        if(responseBody!=null)
+                        {
+                            Thread.sleep(10000)
+                            val inputStream=responseBody.byteStream()
+                            val bitmap=BitmapFactory.decodeStream(inputStream)
+                            context.activity?.runOnUiThread {
+                                context.binding.progressBar.visibility=View.GONE
+                                context.binding.aiimageView.visibility=View.VISIBLE
+                                Glide.with(context.requireActivity())
+                                    .load(bitmap)
+                                    .into(context.binding.aiimageView)
+                            }
+                        }
+                    }
+                })
+            }
+        }
         holder.image.setOnClickListener {
             val intent=Intent(it.context,DetailActivity::class.java)
             intent.putExtra("itemId", item.id)
             intent.putExtra("userId",(context.activity as MainActivity).getID())
             context.resultLauncher.launch(intent)
         }
+
     }
 
     override fun getItemCount() = items.size

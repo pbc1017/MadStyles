@@ -241,18 +241,27 @@ app.post('/getDetail', async (req, res) => {
   res.json({result: result[0], imgSrcs: imgSrcs });
 });
 
-app.post('/getaiimage',async(req,res)=>{
+app.post('/createaiimage',async(req,res)=>{
+  await client.connect()
+  userdata=client.db('Users').collection('person');
+  fashiondata=client.db('Fashion').collection('Clothes');
+  user=await userdata.find({id:req.body.user}).toArray()
+  imgurl=user[0].img
+  clothes=await fashiondata.find({id:req.body.item}).toArray()
+  clothesurl=clothes[0].imageUrl
   axios({
     method:'post',
-    url:'https://a40c-34-124-255-123.ngrok-free.app/getimg',
-    data:req.body,
+    url:'https://fc4a-34-83-134-3.ngrok-free.app/getimg',
+    data:{
+      'img':imgurl,
+      'cloth':clothesurl
+    },
     responseType:'stream',
     headers:{'ngrok-skip-browser-warning': 1}
   }).then(response=>{
-    response.data.pipe(fs.createWriteStream('./result/img'+Date.now()+".png"))
+    response.data.pipe(fs.createWriteStream('./result/img_'+req.body.user+'_'+req.body.item+'.png'))
     response.data.on('end',()=>{
-      res.set('Content-Type','image/gif')
-      fs.createReadStream('./result/img.png').pipe(res)
+        res.json('img_'+req.body.user+'_'+req.body.item+'.png')
     })
   })
   .catch(err=>{
@@ -260,6 +269,14 @@ app.post('/getaiimage',async(req,res)=>{
   })
   
 });
+
+
+app.post('/getaiimage',async(req,res)=>{
+    
+  res.set('Content-Type','image/gif')
+  fs.createReadStream('./result/img_'+req.body.user+'_'+req.body.item+'.png').pipe(res)
+  }
+);
 
 app.post('/search', async (req, res) => {
   try {

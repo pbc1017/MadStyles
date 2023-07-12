@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.KAPO.madstyles.databinding.ActivityDetailBinding
 import com.bumptech.glide.Glide
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.concurrent.thread
 
@@ -114,7 +115,7 @@ class DetailActivity : AppCompatActivity() {
         reviewAdapter = ReviewAdapter(reviews, binding, userId)
 
         requestDetail(itemId)
-
+        addtorecent(itemId,userId)
         viewPager = findViewById(R.id.viewPager)
         viewPager.adapter = adapter
         val pageNumber: TextView = binding.pageNumber
@@ -252,9 +253,9 @@ class DetailActivity : AppCompatActivity() {
                 itemJson.put("count",binding.count.text.toString().toInt())
                 json.put("item",itemJson)
                 requestCart(json)
-                thread(start=true) {
-                    requestAIimage(userId,itemId)
-                }
+               // thread(start=true) {
+                 //   requestAIimage(userId,itemId)
+                //}
                 binding.buyDetail.visibility=View.GONE
                 binding.addCartButton.visibility=View.GONE
                 Toast.makeText(this, "장바구니에 상품을 담았습니다.",Toast.LENGTH_SHORT)
@@ -283,6 +284,20 @@ class DetailActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun addtorecent(itemId: Int, userId: String) {
+        val addobj = JSONObject().apply {
+            put("item", itemId)
+            put("user", userId)
+        }
+        thread(start=true) {
+            serverCommu.sendRequest(addobj, "addrecent", {result ->
+            }, {result ->
+                Log.d("Result","${result}")
+            })
+        }
+    }
+
     private fun sendReview(review: Review, itemId: Int) {
         val json = JSONObject().apply {
             put("itemId", itemId)

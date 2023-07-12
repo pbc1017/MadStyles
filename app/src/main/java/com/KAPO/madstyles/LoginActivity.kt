@@ -94,29 +94,35 @@ class LoginActivity : AppCompatActivity() {
             binding.createAdded.visibility = View.GONE
         }
         binding.btncreateaccount.setOnClickListener {
-            if(kakaoid=="") {//normal login
-                val user = JSONObject()
-                user.put("id", binding.inputId.text.toString())
-                user.put("password", binding.inputPw.text.toString())
-                user.put("gender", prefer["성별"]?.get(0))
-                val pref = JSONObject()
-                pref.put("style", prefer["스타일"]?.get(0))
-                pref.put("color", prefer["색상"]?.get(0))
-                pref.put("pRange", prefer["가격대"]?.get(0))
-                user.put("prefer", pref)
-                val cart = JSONArray()
-                user.put("cart", cart)
-                Log.d("Item", user.toString())
-                thread(start = true) {
+            if (kakaoid == "") {//normal login
+                if(binding.inputId.text.toString()!="" && binding.inputPw.text.toString()!="") {
+                    val user = JSONObject()
+                    user.put("id", binding.inputId.text.toString())
+                    user.put("password", binding.inputPw.text.toString())
+                    user.put("gender", prefer["성별"]?.get(0))
+                    val pref = JSONObject()
+                    pref.put("style", prefer["스타일"]?.get(0))
+                    pref.put("color", prefer["색상"]?.get(0))
+                    pref.put("pRange", prefer["가격대"]?.get(0))
+                    user.put("prefer", pref)
+                    val cart = JSONArray()
+                    user.put("cart", cart)
+                    val recent = JSONArray()
+                    user.put("recent", recent)
+                    Log.d("Item", user.toString())
+                    thread(start = true) {
 
-                    sendAccountCreateRequest(user)
+                        sendAccountCreateRequest(user)
+                    }
                 }
-            }
-            else
-            {//kakao login
+                else
+                {
+                    Toast.makeText(this, "아이디와 비밀번호를 입력해 주세요!", Toast.LENGTH_SHORT).show()
+                }
+            } else {//kakao login
                 val user = JSONObject()
                 user.put("id", binding.inputNickname.text.toString())
-                user.put("kakaoid",kakaoid)
+                user.put("kakaoid", kakaoid)
                 user.put("gender", prefer["성별"]?.get(0))
                 val pref = JSONObject()
                 pref.put("style", prefer["스타일"]?.get(0))
@@ -125,6 +131,8 @@ class LoginActivity : AppCompatActivity() {
                 user.put("prefer", pref)
                 val cart = JSONArray()
                 user.put("cart", cart)
+                val recent = JSONArray()
+                user.put("recent", recent)
                 Log.d("Item", user.toString())
                 thread(start = true) {
 
@@ -132,6 +140,8 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
+
+
 //        Log.d("Test","로그인 화면으로 들어옴")
 
         val logincallback:(OAuthToken?,Throwable?)->Unit={token,err->
@@ -231,6 +241,7 @@ class LoginActivity : AppCompatActivity() {
                                         } else {
                                             this.runOnUiThread{
                                                 Toast.makeText(this,"회원 가입을 진행합니다",Toast.LENGTH_SHORT).show()
+                                                binding.createAdded.visibility = View.VISIBLE
                                                 binding.prefer.visibility= View.VISIBLE
                                                 binding.btncreateaccount.visibility=View.VISIBLE
                                                 binding.kakaonickname.visibility=View.VISIBLE
@@ -314,11 +325,11 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else {
                     this.runOnUiThread {
-                        Toast.makeText(
-                            this,
-                            "ID/PW가 일치하지 않습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this,"회원 가입을 진행합니다",Toast.LENGTH_SHORT).show()
+                        binding.createAdded.visibility = View.VISIBLE
+                        binding.prefer.visibility= View.VISIBLE
+                        binding.btncreateaccount.visibility=View.VISIBLE
+                        binding.kakaonickname.visibility=View.VISIBLE
                     }
                 }
             }, { result ->

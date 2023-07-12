@@ -24,9 +24,8 @@ class OneFragment : Fragment() {
     private lateinit var itemAdapter1: ItemAdapter
     private lateinit var itemAdapter2: ItemAdapter
     private lateinit var itemAdapter3: ItemAdapter
-    private lateinit var itemAdapter4: ItemAdapter
     var json:String=""
-    val items = listOf(mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>())
+    val items = listOf(mutableListOf<Item>(),mutableListOf<Item>(),mutableListOf<Item>())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,15 +70,11 @@ class OneFragment : Fragment() {
         view.findViewById<RecyclerView>(R.id.recommend_view_3).adapter=itemAdapter3
         view.findViewById<RecyclerView>(R.id.recommend_view_3).layoutManager=linmanager3
 
-        itemAdapter4= ItemAdapter(items[3],1,resultLauncher, id) //item을 어떻게 가져오지?
-        val linmanager4=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
-        view.findViewById<RecyclerView>(R.id.recent_view).adapter=itemAdapter4
-        view.findViewById<RecyclerView>(R.id.recent_view).layoutManager=linmanager4
+
 
         Requestrecommend(id,0)
             .thenApply {Requestrecommend(id,1)}
             .thenAccept{Requestrecommend(id,2)}
-            //.thenAccept{Requestrecommend(id,3)}
 
     }
 
@@ -88,7 +83,7 @@ class OneFragment : Fragment() {
             val QueryObj= JSONObject()
             QueryObj.put("id",id)
 
-            synchronized(this) {
+            //synchronized(this) {
                 thread(start=true) {
                     serverCommu.sendRequest(QueryObj, "recommend/${kind}", {result ->
                         json = result
@@ -124,7 +119,7 @@ class OneFragment : Fragment() {
                         Log.d("Result","${result}")
                     })
                 }
-            }
+        //    }
         }
     }
 }

@@ -4,10 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -83,14 +86,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if(!intent.getBooleanExtra("Loginagain",false)) {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivityForResult(intent, 10)
-        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if(intent.getBooleanExtra("Loginagain",false))
+        if(!intent.getBooleanExtra("Loginagain",false)) {
+            binding.tabs.visibility=View.GONE
+            Handler(Looper.getMainLooper()).postDelayed({
+                binding.imageView.visibility= View.GONE
+                binding.tabs.visibility=View.VISIBLE
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivityForResult(intent, 10)
+
+            },3000)
+        }
+        else
         {
+            binding.imageView.visibility= View.GONE
             id = intent.getStringExtra("id")
             gender=intent.getStringExtra("gender")
             binding.viewpager.adapter = MyFragmentPagerAdapter(this)

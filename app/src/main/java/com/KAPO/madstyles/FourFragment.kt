@@ -216,7 +216,9 @@ class FourFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        requestCart((activity as MainActivity).getID())
+        //val id=(activity as MainActivity).getID()
+        //if(id!="")
+        //    requestCart(id)
     }
 }
 

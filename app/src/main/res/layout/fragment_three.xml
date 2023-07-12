@@ -4,17 +4,19 @@
     android:layout_width="match_parent"
     android:orientation="vertical">
     <TextView
-        android:id="@+id/label"
-        android:layout_marginTop="10dp"
+        android:id="@+id/labelHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="24dp"
         android:text="Search"
-        />
+        android:fontFamily="@font/helvetica_bold"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="15dp" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="15dp"
         android:orientation="horizontal">
         <EditText
             android:id="@+id/search_text"
@@ -34,6 +36,8 @@
     </LinearLayout>
 
     <LinearLayout
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
         android:id="@+id/filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -41,10 +45,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
                 android:text="성별"/>
             <HorizontalScrollView
                 android:layout_width="0dp"
@@ -61,10 +68,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
                 android:text="종류"/>
             <HorizontalScrollView
                 android:layout_width="0dp"
@@ -81,10 +91,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
                 android:text="색상"/>
             <HorizontalScrollView
                 android:layout_width="0dp"
@@ -101,10 +114,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
                 android:text="가격"/>
             <HorizontalScrollView
                 android:layout_width="0dp"
@@ -121,10 +137,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical"
                 android:text="정렬"/>
             <HorizontalScrollView
                 android:layout_width="0dp"
@@ -142,6 +161,8 @@
 
 
     <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:id="@+id/recycler_view_search"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

@@ -208,8 +208,8 @@ class TwoFragment : Fragment() {
         val btn = Button(context)
         btn.text = name
         btn.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        btn.setBackgroundResource(R.drawable.round_button) // round_button를 배경으로 설정
         (btn.layoutParams as LinearLayout.LayoutParams).setMargins(0,0,20,0)
+        btn.setBackgroundResource(R.drawable.round_button) // round_button를 배경으로 설정
         btn.setOnClickListener {
             kind = name
             thread(start = true) {

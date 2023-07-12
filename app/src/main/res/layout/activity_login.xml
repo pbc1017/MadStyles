@@ -82,6 +82,7 @@
                     android:id="@+id/input_pw"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:inputType="textPassword"
                     android:hint="PW"
                     android:textSize="15sp"/>
             </LinearLayout>

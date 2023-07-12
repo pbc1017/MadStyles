@@ -181,10 +181,10 @@ class ThreeFragment : Fragment() {
 
             // 모든 버튼의 색깔을 회색으로 변경합니다.
             for ((_, buttons) in buttonMap) {
-                buttons.forEach { it.setBackgroundColor(Color.GRAY) }
+                buttons.forEach { it.isSelected = false }
             }
             filter["sort"] = mutableSetOf("인기순")
-            buttonMap["sort"]?.find { it.text == "인기순" }?.setBackgroundColor(Color.WHITE)
+            buttonMap["sort"]?.find { it.text == "인기순" }?.isSelected = true
         }
         val query = makeQuery(binding.searchText.text.toString(), isSame)
         changeButton(query)
@@ -233,10 +233,10 @@ class ThreeFragment : Fragment() {
     fun createButton(name: String, group: String): Button {
         val btn = Button(context)
         btn.text = name
-        btn.layoutParams =
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        btn.setBackgroundColor(Color.GRAY) // 기본 버튼 색상
-        if (btn.text == "인기순") btn.setBackgroundColor(Color.WHITE)
+        btn.setBackgroundResource(R.drawable.round_button)
+        btn.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        (btn.layoutParams as LinearLayout.LayoutParams).setMargins(0,0,20,0)
+        if (btn.text == "인기순") btn.isSelected = true
         btn.setOnClickListener {
             val button = it as Button
             var currentList = filter[group] ?: mutableSetOf()
@@ -245,48 +245,48 @@ class ThreeFragment : Fragment() {
                 if (!currentList.contains(name)) {
                     currentList.clear()
                     currentList.add(name)
-                    currentButtonList.forEach { if(it.text == name) it.setBackgroundColor(Color.WHITE) else it.setBackgroundColor(Color.GRAY)}
+                    currentButtonList.forEach { if(it.text == name) it.isSelected=true else it.isSelected=false}
                 }
             } else {
                 if (name == "전체") {
                     if (currentList.contains("전체")) {
                         // "전체" 버튼이 눌려있을 경우 필터를 비우고 버튼 색상을 초기화합니다.
                         currentList.clear()
-                        currentButtonList.forEach { it.setBackgroundColor(Color.GRAY) }
+                        currentButtonList.forEach { it.isSelected=false}
                     } else {
                         // "전체" 버튼이 눌리지 않은 경우 필터를 "전체"로 설정하고 버튼 색상을 바꿉니다.
                         currentList.clear()
                         currentList.add("전체")
-                        currentButtonList.forEach { it.setBackgroundColor(Color.WHITE) }
+                        currentButtonList.forEach { it.isSelected=true }
                     }
                 } else {
                     if (currentList.contains("전체")) {
                         // "전체" 버튼이 눌려있으면 다른 버튼을 눌렀을 때 "전체"를 필터에서 제거하고, 해당 버튼을 제외한 다른 버튼들을 필터에 추가합니다.
                         currentList.remove("전체")
-                        currentButtonList.find { it.text == "전체" }?.setBackgroundColor(Color.GRAY)
+                        currentButtonList.find { it.text == "전체" }?.isSelected=false
                         for (otherButton in currentButtonList) {
                             if (otherButton.text != name && otherButton.text != "전체") {
                                 currentList.add(otherButton.text.toString())
-                                otherButton.setBackgroundColor(Color.WHITE)
+                                otherButton.isSelected = true
                             }
                         }
-                        button.setBackgroundColor(Color.GRAY)
-                        currentButtonList.forEach {if(it.text == "전체") it.setBackgroundColor(Color.GRAY)}
+                        button.isSelected = false
+                        currentButtonList.forEach {if(it.text == "전체") it.isSelected = false}
                     } else {
                         if (currentList.contains(name)) {
                             // 이미 선택된 버튼을 다시 클릭하면 필터에서 해당 항목을 제거하고 버튼 색상을 초기화합니다.
                             currentList.remove(name)
-                            button.setBackgroundColor(Color.GRAY)
+                            button.isSelected = false
                         } else {
                             // 선택되지 않은 버튼을 클릭하면 필터에 해당 항목을 추가하고 버튼 색상을 바꿉니다.
                             currentList.add(name)
-                            button.setBackgroundColor(Color.WHITE)
+                            button.isSelected = true
                         }
                     }
                     // 전체 버튼을 제외한 모든 버튼이 선택되었다면 전체 버튼이 눌려진 것으로 처리합니다.
                     if (currentButtonList.all { it.text == "전체" || currentList.contains(it.text)}) {
                         currentList = mutableSetOf("전체")
-                        currentButtonList.forEach { it.setBackgroundColor(Color.WHITE)}
+                        currentButtonList.forEach { it.isSelected = true}
                     }
                 }
                 if (currentList.isEmpty()) {
@@ -327,15 +327,15 @@ class ThreeFragment : Fragment() {
             val currentButtonList = buttonMap[group] ?: mutableListOf()
             for (button in currentButtonList) {
                 if (values.contains(button.text.toString())) {
-                    button.setBackgroundColor(Color.WHITE)
+                    button.isSelected = true
                 } else {
-                    button.setBackgroundColor(Color.GRAY)
+                    button.isSelected = false
                 }
             }
         }
         for ((group, buttons) in buttonMap) {
             if (!newFilter.has(group)) {
-                buttons.forEach { it.setBackgroundColor(Color.GRAY) }
+                buttons.forEach { it.isSelected = false }
             }
         }
         //TODO: 전체가 포함되면 싹다 색칠, 싹다 색칠되면 전체로 변경

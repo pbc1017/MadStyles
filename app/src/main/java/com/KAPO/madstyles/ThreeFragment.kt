@@ -112,7 +112,12 @@ class ThreeFragment : Fragment() {
         "검정색" to "검정",
         "남성" to "남자",
         "여성" to "여자",
-        "팬츠" to "바지"
+        "팬츠" to "바지",
+        "흰색" to "흰",
+        "블랙" to "검정",
+        "화이트" to "흰",
+        "블루" to "파랑",
+        "레드" to "빨강"
         //... add other similar words
     )
 

@@ -2,6 +2,8 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.MadStyles" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/button1</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
     </style>
 
     <style name="Theme.MadStyles" parent="Base.Theme.MadStyles" />

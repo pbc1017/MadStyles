@@ -119,19 +119,22 @@ targetSdkVersion 33
 
 ### TAB 4 - Cart
 
+<img src="https://user-images.githubusercontent.com/20718582/252948934-b5f4c7c6-e6ad-459c-98da-f938f2857038.png" width="400" height="700"/>
+<img src="https://github.com/pbc1017/MadStyles/assets/20718582/c4e33a18-98af-4054-8233-115138fc8125" width="400" height="700"/>
 
 ***Major features***
 
 - 상세 정보 페이지에서 장바구니에 담은 상품들을 확인할 수 있습니다.
+- 구매 수량을 변경하거나 선택한 상품을 장바구니에서 제거할 수 있습니다. 
 - 상의의 경우, 미리 등록해 놓은 body image를 통해 옷의 착용 사진을 AI generation으로 확인할 수 있습니다.
-- 
+  
 
 ---
 
 ***기술설명***
 
-- 
-
+- AI generation의 경우 2020년에 발표된 Pytorch 기반 VITON-HD 모델을 활용했습니다.
+- 해당 모델을 구글 colab 환경에서 실행하고, Flask를 통해 서버로부터 생성 요청을 받습니다. 
 ---
 
 ### TAB 5 - My Page

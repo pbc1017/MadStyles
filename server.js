@@ -78,6 +78,27 @@ app.post('/login',async (req,res)=>{
 
 });
 
+app.post('/kakaologin',async (req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    const result=await userdata.find(req.body).toArray();
+    if(result.length>0)
+    {
+      //return user info
+      res.json(result[0]);
+    }
+    else
+    //login false
+      res.json("false");
+  }
+  finally
+  {
+    // client.close();
+  }
+
+});
+
 app.post('/updateaccount',async(req,res)=>{
   try{
     await client.connect();
@@ -165,6 +186,28 @@ app.post('/createaccount',async (req,res)=>{
     await client.connect();
     userdata=client.db('Users').collection('person');
     const result=await userdata.find({id:req.body.id}).toArray();
+    if(result.length>0)
+    {
+      res.json("exist");
+    }
+    else
+    {
+      await userdata.insertOne(req.body);
+      res.json("OK");
+    }
+  }
+  finally
+  {
+    // client.close();
+  }
+   
+});
+
+app.post('/createkakaoaccount',async (req,res)=>{
+  try{
+    await client.connect();
+    userdata=client.db('Users').collection('person');
+    const result=await userdata.find({$or:[{kakaoid:req.body.kakaoid},{id:req.body.id}]}).toArray();
     if(result.length>0)
     {
       res.json("exist");

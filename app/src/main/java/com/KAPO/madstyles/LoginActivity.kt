@@ -59,6 +59,7 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.prefer.visibility=View.INVISIBLE
+        binding.kakaonickname.visibility=View.INVISIBLE
         binding.btncreateaccount.visibility=View.INVISIBLE
         val kindview=arrayOf<LinearLayout> (binding.kindview1,binding.kindview2,binding.kindview3,binding.kindview4)
         var i=0
@@ -84,10 +85,10 @@ class LoginActivity : AppCompatActivity() {
         binding.btnShowselection.setOnClickListener{
             binding.prefer.visibility= View.VISIBLE
             binding.btncreateaccount.visibility=View.VISIBLE
-
+            binding.kakaonickname.visibility=View.GONE
         }
         binding.btncreateaccount.setOnClickListener {
-            if(kakaoid=="") {
+            if(kakaoid=="") {//normal login
                 val user = JSONObject()
                 user.put("id", binding.inputId.text.toString())
                 user.put("password", binding.inputPw.text.toString())
@@ -106,10 +107,10 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             else
-            {
+            {//kakao login
                 val user = JSONObject()
-                user.put("id", kakaoid)
-                user.put("password",kakaoid)
+                user.put("id", binding.inputNickname.text.toString())
+                user.put("kakaoid",kakaoid)
                 user.put("gender", prefer["성별"]?.get(0))
                 val pref = JSONObject()
                 pref.put("style", prefer["스타일"]?.get(0))
@@ -132,9 +133,44 @@ class LoginActivity : AppCompatActivity() {
                 Log.d("KAKAO","LOGIN FAILED")
             }
             else if(token!=null){
-                Toast.makeText(this,"회원 가입을 진행합니다",Toast.LENGTH_SHORT).show()
-                binding.prefer.visibility= View.VISIBLE
-                binding.btncreateaccount.visibility=View.VISIBLE
+                UserApiClient.instance.accessTokenInfo { tokenInfo, error ->
+                    kakaoid = tokenInfo?.id.toString()
+                    val JSONobj = JSONObject()
+                    JSONobj.put("kakaoid", kakaoid)
+                    thread(start=true) {
+                        serverCommu.sendRequest(JSONobj, "kakaologin", { result ->
+                            Log.d("Login OK", result.toString())
+                            //Log.d("Result","${result}")
+                            if (result != "false") {
+                                val infotest = JSONObject(result)
+                                if (!Loginagain) {
+                                    intent.putExtra("id", infotest.getString("id"))
+                                    intent.putExtra(
+                                        "gender", infotest.getString("gender")
+                                    )
+                                    setResult(RESULT_OK, intent)
+                                    finish()
+                                } else {
+                                    val loginIntent = Intent(this, MainActivity::class.java)
+                                    loginIntent.putExtra("id", infotest.getString("id"))
+                                    loginIntent.putExtra("gender", infotest.getString("gender"))
+                                    loginIntent.putExtra("Loginagain", true)
+                                    startActivity(loginIntent)
+                                    finish()
+                                }
+                            } else {
+                                this.runOnUiThread {
+                                    Toast.makeText(this, "회원 가입을 진행합니다", Toast.LENGTH_SHORT).show()
+                                    binding.prefer.visibility = View.VISIBLE
+                                    binding.btncreateaccount.visibility = View.VISIBLE
+                                    binding.kakaonickname.visibility = View.VISIBLE
+                                }
+                            }
+                        }, { result ->
+                            Log.d("Err:", "${result}")
+                        })
+                    }
+                }
             }
         }
 
@@ -164,9 +200,8 @@ class LoginActivity : AppCompatActivity() {
                                 kakaoid=tokenInfo?.id.toString()
                                 thread(start=true){
                                     val JSONobj=JSONObject()
-                                    JSONobj.put("id",kakaoid)
-                                    JSONobj.put("password",kakaoid)
-                                    serverCommu.sendRequest(JSONobj, "login", {result ->
+                                    JSONobj.put("kakaoid",kakaoid)
+                                    serverCommu.sendRequest(JSONobj, "kakaologin", {result ->
                                         Log.d("Login OK",result.toString())
                                         //Log.d("Result","${result}")
                                         if (result != "false") {
@@ -191,6 +226,7 @@ class LoginActivity : AppCompatActivity() {
                                                 Toast.makeText(this,"회원 가입을 진행합니다",Toast.LENGTH_SHORT).show()
                                                 binding.prefer.visibility= View.VISIBLE
                                                 binding.btncreateaccount.visibility=View.VISIBLE
+                                                binding.kakaonickname.visibility=View.VISIBLE
                                             }
                                         }
                                     }, {result ->
@@ -210,60 +246,134 @@ class LoginActivity : AppCompatActivity() {
 
     private fun sendLoginRequest(id: String, pw: String) {
         val JSONobj=JSONObject()
-        JSONobj.put("id",id)
-        JSONobj.put("password",pw)
-        serverCommu.sendRequest(JSONobj, "login", {result ->
-            Log.d("Login OK",result.toString())
-            //Log.d("Result","${result}")
-            if (result != "false") {
-                val infotest=JSONObject(result)
-                if(!Loginagain) {
-                    intent.putExtra("id", infotest.getString("id"))
-                    intent.putExtra("gender", infotest.getString("gender")
-                    )
-                    setResult(RESULT_OK, intent)
-                    finish()
+        if(kakaoid=="") {
+            JSONobj.put("id",id)
+            JSONobj.put("password",pw)
+            serverCommu.sendRequest(JSONobj, "login", { result ->
+                Log.d("Login OK", result.toString())
+                //Log.d("Result","${result}")
+                if (result != "false") {
+                    val infotest = JSONObject(result)
+                    if (!Loginagain) {
+                        intent.putExtra("id", infotest.getString("id"))
+                        intent.putExtra(
+                            "gender", infotest.getString("gender")
+                        )
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val loginIntent = Intent(this, MainActivity::class.java)
+                        loginIntent.putExtra("id", infotest.getString("id"))
+                        loginIntent.putExtra("gender", infotest.getString("gender"))
+                        loginIntent.putExtra("Loginagain", true)
+                        startActivity(loginIntent)
+                        finish()
+                    }
+                } else {
+                    this.runOnUiThread {
+                        Toast.makeText(
+                            this,
+                            "ID/PW가 일치하지 않습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-                else{
-                    val loginIntent=Intent(this,MainActivity::class.java)
-                    loginIntent.putExtra("id", infotest.getString("id"))
-                    loginIntent.putExtra("gender", infotest.getString("gender"))
-                    loginIntent.putExtra("Loginagain",true)
-                    startActivity(loginIntent)
-                    finish()
+            }, { result ->
+                Log.d("Err:", "${result}")
+            })
+        }
+        else
+        {
+            JSONobj.put("kakaoid",kakaoid)
+            serverCommu.sendRequest(JSONobj, "kakaologin", { result ->
+                Log.d("Login OK", result.toString())
+                //Log.d("Result","${result}")
+                if (result != "false") {
+                    val infotest = JSONObject(result)
+                    if (!Loginagain) {
+                        intent.putExtra("id", infotest.getString("id"))
+                        intent.putExtra(
+                            "gender", infotest.getString("gender")
+                        )
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val loginIntent = Intent(this, MainActivity::class.java)
+                        loginIntent.putExtra("id", infotest.getString("id"))
+                        loginIntent.putExtra("gender", infotest.getString("gender"))
+                        loginIntent.putExtra("Loginagain", true)
+                        startActivity(loginIntent)
+                        finish()
+                    }
+                } else {
+                    this.runOnUiThread {
+                        Toast.makeText(
+                            this,
+                            "ID/PW가 일치하지 않습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            } else {
-               this.runOnUiThread{Toast.makeText(this,"ID/PW가 일치하지 않습니다.",Toast.LENGTH_SHORT).show()}
-            }
-        }, {result ->
-            Log.d("Err:","${result}")
-        })
+            }, { result ->
+                Log.d("Err:", "${result}")
+            })
+        }
+
     }
 
     private fun sendAccountCreateRequest(person:JSONObject) {
-        serverCommu.sendRequest(person, "createaccount", {result ->
-            if (result == "OK") {
+        if(kakaoid=="") {
+            serverCommu.sendRequest(person, "createaccount", { result ->
+                if (result == "OK") {
 
-                if(!Loginagain) {
-                    intent.putExtra("id",binding.inputId.text.toString())
-                    intent.putExtra("gender",prefer["성별"]?.get(0))
-                    setResult(RESULT_OK, intent)
-                    finish()
+                    if (!Loginagain) {
+                        intent.putExtra("id", binding.inputId.text.toString())
+                        intent.putExtra("gender", prefer["성별"]?.get(0))
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val loginIntent = Intent(this, MainActivity::class.java)
+                        loginIntent.putExtra("id", binding.inputId.text.toString())
+                        loginIntent.putExtra("gender", prefer["성별"]?.get(0))
+                        loginIntent.putExtra("Loginagain", true)
+                        startActivity(loginIntent)
+                        finish()
+                    }
+                } else {
+                    this.runOnUiThread {
+                        Toast.makeText(this, "이미 존재하는 아이디입니다", Toast.LENGTH_SHORT).show()
+                    }
                 }
-                else{
-                    val loginIntent=Intent(this,MainActivity::class.java)
-                    loginIntent.putExtra("id", binding.inputId.text.toString())
-                    loginIntent.putExtra("gender", prefer["성별"]?.get(0))
-                    loginIntent.putExtra("Loginagain",true)
-                    startActivity(loginIntent)
-                    finish()
+            }, { result ->
+                Log.d("Err:", "${result}")
+            })
+        }
+        else{
+            serverCommu.sendRequest(person, "createkakaoaccount", { result ->
+                if (result == "OK") {
+
+                    if (!Loginagain) {
+                        intent.putExtra("id", binding.inputNickname.text.toString())
+                        intent.putExtra("gender", prefer["성별"]?.get(0))
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val loginIntent = Intent(this, MainActivity::class.java)
+                        loginIntent.putExtra("id", binding.inputNickname.text.toString())
+                        loginIntent.putExtra("gender", prefer["성별"]?.get(0))
+                        loginIntent.putExtra("Loginagain", true)
+                        startActivity(loginIntent)
+                        finish()
+                    }
+                } else {
+                    this.runOnUiThread {
+                        Toast.makeText(this, "이미 존재하는 아이디입니다", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            } else {
-                this.runOnUiThread{Toast.makeText(this,"이미 존재하는 아이디입니다",Toast.LENGTH_SHORT).show()}
-            }
-        }, {result ->
-            Log.d("Err:","${result}")
-        })
+            }, { result ->
+                Log.d("Err:", "${result}")
+            })
+        }
     }
 
     fun createButton(name: String, group: String): Button {

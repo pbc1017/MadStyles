@@ -77,6 +77,7 @@ class FiveFragment : Fragment() {
             }
         }
         id=(activity as MainActivity).getID()
+        binding.userProfile.text="${id}님"
         itemAdapter= ItemAdapter(items,1,resultLauncher, id) //item을 어떻게 가져오지?
         val linmanager= LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,false)
         binding.recentView.adapter=itemAdapter

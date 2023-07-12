@@ -75,7 +75,7 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val 
             lp.width=500
             lp.height=790
             holder.rank.visibility=View.GONE
-        } else if (index == 3) {
+        } else if (index == 3||index==5) {
             holder.rank.visibility=View.GONE
         }
         holder.itemView.setOnClickListener() {
@@ -185,7 +185,7 @@ class TwoFragment : Fragment() {
                     )
                 )
             }
-            requireActivity().runOnUiThread{
+            activity?.runOnUiThread{
                 itemAdapter.notifyDataSetChanged()
                 recyclerView.scrollToPosition(0)
             }

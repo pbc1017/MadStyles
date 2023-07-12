@@ -314,7 +314,7 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
 
             thread(start=true){
                 //val URL="http://172.20.31.68:80/getaiimage"
-                val URL="https://d391-192-249-19-234.ngrok-free.app/getaiimage"
+                val URL="https://ee78-192-249-19-234.ngrok-free.app/getaiimage"
                 val JSONobj=JSONObject().apply{
                     put("user",(context.activity as MainActivity).getID())
                     put("item",item.id)

@@ -301,14 +301,13 @@ app.post('/addReview', async (req, res) => {
 app.post('/deleteReview', async (req, res) => {
     await client.connect();
     const itemData = client.db('Fashion').collection('Clothes');
-
+    
+    const review = req.body.review;
     const itemId = req.body.itemId;
-    const reviewId = req.body.reviewId;
 
-    const result = await itemData.findOneAndUpdate(
+    await itemData.findOneAndUpdate(
         { id: itemId },
-        { $pull: { reviews: { id: reviewId } } },
-        { returnDocument: "after" }
+        { $pull: { review: { userId: review.userId } } }
     );
 
     res.json(result);

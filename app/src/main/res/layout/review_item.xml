@@ -25,12 +25,6 @@
             android:layout_height="30dp"
             android:textSize="10sp"
             android:text="수정"/>
-        <Button
-            android:id="@+id/review_delete_button"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:textSize="10sp"
-            android:text="삭제"/>
     </LinearLayout>
 
 

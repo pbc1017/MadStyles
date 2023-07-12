@@ -47,7 +47,6 @@ class ViewPagerAdapter(private val images: List<String>) : RecyclerView.Adapter<
 class ReviewAdapter(private val reviews: MutableList<Review>, val binding: ActivityDetailBinding, val userId: String) : RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
     inner class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val reviewDeleteButton: Button = itemView.findViewById(R.id.review_delete_button)
         val reviewEditButton: Button = itemView.findViewById(R.id.review_edit_button)
         val userId: TextView = itemView.findViewById(R.id.user_id)
         val rating: TextView = itemView.findViewById(R.id.rating)
@@ -67,11 +66,9 @@ class ReviewAdapter(private val reviews: MutableList<Review>, val binding: Activ
         if (review.userId == userId) {
             binding.inputReview.visibility=View.GONE
             holder.reviewEditButton.visibility = View.VISIBLE
-            holder.reviewDeleteButton.visibility = View.VISIBLE
         } else {
             binding.inputReview.visibility=View.VISIBLE
             holder.reviewEditButton.visibility = View.GONE
-            holder.reviewDeleteButton.visibility = View.GONE
         }
 
         holder.reviewEditButton.setOnClickListener() {
@@ -81,17 +78,6 @@ class ReviewAdapter(private val reviews: MutableList<Review>, val binding: Activ
 //                star.setColorFilter(if (i < holder.rating.text.toString().toInt()) Color.YELLOW else Color.GRAY)
 //            }
             binding.reviewEditText.setText(holder.text.text.toString())
-            reviews.remove(review)
-            notifyDataSetChanged()
-        }
-        holder.reviewDeleteButton.setOnClickListener() {
-            binding.inputReview.visibility=View.VISIBLE
-            val starButtons = arrayOf(binding.star1,binding.star2,binding.star3,binding.star4,binding.star5)
-            starButtons.forEachIndexed { i, star ->
-                star.setColorFilter(Color.GRAY)
-            }
-            binding.reviewEditText.setText("")
-            //TODO: 삭제
             reviews.remove(review)
             notifyDataSetChanged()
         }
@@ -159,7 +145,7 @@ class DetailActivity : AppCompatActivity() {
 //            }
             val reviewText = reviewEditText.text.toString()
             if (reviewText.isNotEmpty() && rating > 0) {
-                val review = Review(userId.toString(), rating, reviewText)
+                val review = Review(userId, rating, reviewText)
                 sendReview(review, itemId)
                 //TODO: hideKeyboard()
             } else {
@@ -306,11 +292,38 @@ class DetailActivity : AppCompatActivity() {
         thread(start = true) {
             serverCommu.sendRequest(json, "addReview", { result ->
                 Log.d("Result", "${result}")
+                Log.d("Review",reviews.toString())
                 reviews.add(0, review)
                 runOnUiThread {
-                    reviewAdapter.notifyDataSetChanged()
                     binding.inputReview.visibility=View.GONE
                     Toast.makeText(this, "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                    Log.d("Review",reviews.toString())
+                    reviewAdapter.notifyDataSetChanged()
+                    recreate()
+                }
+            }, { result ->
+                Log.d("Result", "${result}")
+            })
+        }
+    }
+    private fun deleteReview(review: Review, itemId: Int) {
+        val json = JSONObject().apply {
+            put("itemId", itemId)
+            put("review", JSONObject().apply {
+                put("userId", review.userId)
+                put("rating", review.rating)
+                put("text", review.text)
+            })
+        }
+        thread(start = true) {
+            serverCommu.sendRequest(json, "deleteReview", { result ->
+                Log.d("Result", "${result}")
+                Log.d("Review",reviews.toString())
+                runOnUiThread {
+                    binding.inputReview.visibility=View.GONE
+                    Toast.makeText(this, "리뷰가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                    Log.d("Review",reviews.toString())
+                    reviewAdapter.notifyDataSetChanged()
                 }
             }, { result ->
                 Log.d("Result", "${result}")

@@ -11,8 +11,12 @@ import java.io.IOException
 
 class serverCommu {
     companion object {
+
         fun sendRequest(JSONobj: JSONObject, api: String, onResponse: (String) -> Unit, onFailure: (String) -> Unit) {
-            val url = "https://4b08-192-249-19-234.ngrok-free.app/${api}"
+//            val url = "http://143.248.226.47:80/${api}"
+         //   val url = "http://143.248.193.110:80/${api}"
+            val url ="https://ee78-192-249-19-234.ngrok-free.app/${api}"
+          //  val url="http://143.248.226.88:80/${api}"
             val okHttpClient= OkHttpClient()
             val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
             val req=okhttp3.Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","123").post(body).build()
@@ -22,7 +26,7 @@ class serverCommu {
                 }
                 override fun onResponse(call: Call, response: okhttp3.Response) {
                     val result = response.body!!.string().removeSurrounding("\"")
-                    Log.d("server",result)
+                    //Log.d("server",result)
                     onResponse(result)
                 }
             })

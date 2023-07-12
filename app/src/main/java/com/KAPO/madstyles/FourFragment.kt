@@ -1,32 +1,47 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.forEach
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.KAPO.madstyles.databinding.FragmentFourBinding
+import com.bumptech.glide.Glide
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
+import kotlin.concurrent.thread
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [FourFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FourFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
+    lateinit var binding: FragmentFourBinding
+    lateinit var resultLauncher:ActivityResultLauncher<Intent>
+    private lateinit var itemAdapter: CartItemAdapter
+    val items = mutableListOf<Item>()
+    val counts=mutableListOf<Int>()
+    var totalcount=0
+    var total=0
+    var json=""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
     }
 
     override fun onCreateView(
@@ -34,26 +49,317 @@ class FourFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_four, container, false)
+        binding = FragmentFourBinding.inflate(inflater,container,false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FourFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FourFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding= FragmentFourBinding.bind(view)
+        val id = (activity as MainActivity).getID()
+
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val id = data?.getStringExtra("id")?.toInt()
+                id?.let {
+                    // id를 기반으로 뷰페이저 페이지를 변경
+                    if (id > -1) (activity as? MainActivity)?.changeViewPagerPage(it)
                 }
             }
+        }
+
+        itemAdapter= CartItemAdapter(items,counts,this)
+        binding.cartview.adapter=itemAdapter
+        binding.cartview.layoutManager=LinearLayoutManager(context, LinearLayoutManager.VERTICAL,false)
+        thread(start=true){
+            requestCart(id)
+        }
+
+        binding.btnDelete.setOnClickListener {
+            val deletelist= mutableListOf<Int>()
+            val deleteitemlist= mutableListOf<Item>()
+            for(i in 0 until binding.cartview.childCount) {
+                val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
+                if(viewholder.checkbox.isChecked) {
+                    deletelist.add(counts[i])
+                    deleteitemlist.add(items[i])
+                }
+                viewholder.checkbox.isChecked=false
+            }
+            deletelist.forEach {
+                counts.remove(it)
+            }
+            deleteitemlist.forEach {
+                items.remove(it)
+            }
+            itemAdapter.notifyDataSetChanged()
+            binding.cartview.post{
+                for(i in 0 until binding.cartview.childCount) {
+                    val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
+                    viewholder.checkbox.isChecked=false
+                }
+            }
+            binding.itemchk.isChecked=false
+            totalcount=0
+            total=0
+            binding.Txttotalselected.text="총 ${totalcount}개"
+            binding.Txttotalcount.text="총 ${totalcount}개"
+            binding.txttotal.text="${total} 원"
+            binding.btnPay.text="${total}원 결제하기"
+
+            thread(start = true){
+                updateCart()
+            }
+
+        }
+        binding.aiimageView.setOnClickListener {
+            binding.aiimageView.visibility=View.GONE
+        }
+        binding.progressBar.visibility=View.GONE
+        binding.itemchk.setOnClickListener {
+            val checkbox = it as CheckBox
+            if (checkbox.isChecked) {
+                for(i in 0 until binding.cartview.childCount) {
+                    val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
+                    viewholder.checkbox.isChecked=true
+                }
+                totalcount=counts.sum()
+                binding.Txttotalselected.text="전체 ${totalcount}개"
+                binding.Txttotalcount.text="총 ${totalcount}개"
+                total=0
+                for(i in 0 until items.size){
+                    total+=items[i].price*counts[i]
+                }
+                binding.txttotal.text="${total} 원"
+                binding.btnPay.text="${total}원 결제하기"
+            } else {
+                for(i in 0 until binding.cartview.childCount) {
+                    val viewholder=binding.cartview.getChildViewHolder(binding.cartview.getChildAt(i)) as CartItemAdapter.ItemViewHolder
+                    viewholder.checkbox.isChecked=false
+                }
+                totalcount=0
+                total=0
+                binding.Txttotalselected.text="전체 ${totalcount}개"
+                binding.Txttotalcount.text="총 ${totalcount}개"
+                binding.txttotal.text="${total} 원"
+                binding.btnPay.text="${total}원 결제하기"
+            }
+        }
+
+    }
+
+    private fun requestCart(id:String) {
+        val QueryObj= JSONObject()
+        QueryObj.put("id",id)
+        serverCommu.sendRequest(QueryObj, "getcartitems", {result ->
+            Log.d("Result","${result}")
+            json = result
+            items.clear()
+            counts.clear()
+            val jsonArray = JSONArray(json)
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObj = jsonArray.getJSONObject(i)
+                items.add(
+                    Item(
+                        id = jsonObj.getInt("id"),
+                        name = jsonObj.getString("name"),
+                        brand = jsonObj.getString("brand"),
+                        price = jsonObj.getInt("price"),
+                        imgUrl = jsonObj.getString("imageUrl"),
+                        color=jsonObj.getString("color"),
+                        rank=jsonObj.getInt("rank")
+                    )
+                )
+                counts.add(jsonObj.getInt("count"))
+            }
+            requireActivity().runOnUiThread{
+                binding.itemchk.isChecked=true
+                totalcount=counts.sum()
+                binding.Txttotalselected.text="전체 ${totalcount}개"
+                binding.Txttotalcount.text="총 ${totalcount}개"
+                total=0
+                for(i in 0 until items.size){
+                    total+=items[i].price*counts[i]
+                }
+                binding.txttotal.text="${total}원"
+                binding.btnPay.text="${total}원 결제하기"
+                itemAdapter.notifyDataSetChanged()
+            }
+        }, {result ->
+            Log.d("Result","${result}")
+        })
+    }
+
+    fun updateCart()
+    {
+        val UpdateObj= JSONObject()
+        UpdateObj.put("id",(activity as MainActivity).getID())
+        val cart=JSONArray()
+        for(i in 0 until items.size)
+        {
+            val item=JSONObject()
+            item.put("id",items[i].id)
+            item.put("count",counts[i])
+            cart.put(item)
+        }
+        //cart 잘 생성
+        UpdateObj.put("cart",cart)
+        serverCommu.sendRequest(UpdateObj, "setcart", {result ->
+            Log.d("Cartupdate result","${result}")
+
+        }, {result ->
+            Log.d("Err:","${result}")
+        })
+    }
+    fun getTotal()
+    {
+        total=0
+        for(i in 0 until items.size){
+            total+=items[i].price*counts[i]
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val id=(activity as MainActivity).getID()
+        if(id!="")
+            requestCart(id)
+    }
+}
+
+class CartItemAdapter(private val items: MutableList<Item>,private val counts:MutableList<Int>, val context:FourFragment) : RecyclerView.Adapter<CartItemAdapter.ItemViewHolder>() {
+    inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val name: TextView = itemView.findViewById(R.id.item_name)
+        val brand: TextView = itemView.findViewById(R.id.item_brand)
+        val price: TextView = itemView.findViewById(R.id.item_price)
+        val image: ImageView = itemView.findViewById(R.id.item_image)
+        val count:TextView=itemView.findViewById(R.id.Txtcount)
+        val checkbox:CheckBox=itemView.findViewById(R.id.itemchk)
+        val inc:Button=itemView.findViewById(R.id.increase)
+        val dec:Button=itemView.findViewById(R.id.decrease)
+        val getai:Button=itemView.findViewById(R.id.showaiimg)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+        val view =LayoutInflater.from(parent.context).inflate(R.layout.cartitem_layout, parent, false)
+        return ItemViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+        val item = items[position]
+        holder.name.text = item.name
+        holder.brand.text = item.brand
+        holder.price.text = (item.price*counts[position]).toString()+"원"
+        Glide.with(holder.image.context)
+            .load(item.imgUrl)
+            .into(holder.image)
+        holder.count.text=counts[position].toString()
+        holder.checkbox.isChecked=true
+        holder.checkbox.setOnClickListener {
+            val chk=it as CheckBox
+            if(chk.isChecked)
+            {
+                context.totalcount+=counts[position]
+                context.total+=item.price*counts[position]
+                if(!context.binding.itemchk.isChecked)
+                    context.binding.itemchk.isChecked=true
+                updateNumbers()
+                //해당 수량만큼 가격 수량 업뎃
+            }
+            else
+            {
+                context.totalcount-=counts[position]
+                context.total-=item.price*counts[position]
+                updateNumbers()
+                //가격 업뎃
+            }
+        }
+        holder.inc.setOnClickListener {
+            counts[position]++
+            thread(start = true){
+                context.updateCart()
+            }
+            holder.count.text=counts[position].toString()
+            holder.price.text="${item.price*counts[position]}원"
+            if(holder.checkbox.isChecked)
+            {
+                context.totalcount++
+                context.total+=item.price
+                updateNumbers()
+            }
+
+        }
+        holder.dec.setOnClickListener {
+            if (counts[position]>0){
+                counts[position]--
+                thread(start = true){
+                    context.updateCart()
+                }
+
+            holder.count.text=counts[position].toString()
+            holder.price.text="${item.price*counts[position]}원"
+            if(holder.checkbox.isChecked){
+                context.totalcount--
+                context.total-=item.price
+
+                updateNumbers()
+
+            }
+            }
+        }
+        holder.getai.setOnClickListener {
+            context.binding.progressBar.visibility=View.VISIBLE
+
+            thread(start=true){
+                //val URL="http://172.20.31.68:80/getaiimage"
+                val URL="https://ee78-192-249-19-234.ngrok-free.app/getaiimage"
+                val JSONobj=JSONObject().apply{
+                    put("user",(context.activity as MainActivity).getID())
+                    put("item",item.id)
+                }
+                val okHttpClient= OkHttpClient()
+                val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
+                val req=okhttp3.Request.Builder().url(URL).addHeader("ngrok-skip-browser-warning","123").post(body).build()
+                okHttpClient.newCall(req).enqueue(object: Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.d("PROBLEM",e.message.toString())
+                    }
+                    override fun onResponse(call: Call, response: okhttp3.Response) {
+                       val responseBody=response.body
+                        if(responseBody!=null)
+                        {
+                            Thread.sleep(10000)
+                            val inputStream=responseBody.byteStream()
+                            val bitmap=BitmapFactory.decodeStream(inputStream)
+                            context.activity?.runOnUiThread {
+                                context.binding.progressBar.visibility=View.GONE
+                                context.binding.aiimageView.visibility=View.VISIBLE
+                                Glide.with(context.requireActivity())
+                                    .load(bitmap)
+                                    .into(context.binding.aiimageView)
+                            }
+                        }
+                    }
+                })
+            }
+        }
+        holder.image.setOnClickListener {
+            val intent=Intent(it.context,DetailActivity::class.java)
+            intent.putExtra("itemId", item.id)
+            intent.putExtra("userId",(context.activity as MainActivity).getID())
+            context.resultLauncher.launch(intent)
+        }
+
+    }
+
+    override fun getItemCount() = items.size
+
+    private fun updateNumbers(){
+        context.binding.Txttotalselected.text="전체 ${context.totalcount}개"
+        context.binding.Txttotalcount.text="총 ${context.totalcount}개"
+        context.binding.txttotal.text="${context.total}원"
+        context.binding.btnPay.text="${context.total}원 결제하기"
     }
 }

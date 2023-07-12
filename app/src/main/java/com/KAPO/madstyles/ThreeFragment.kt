@@ -1,59 +1,348 @@
 package com.KAPO.madstyles
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.KAPO.madstyles.databinding.FragmentThreeBinding
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import org.json.JSONArray
+import org.json.JSONObject
+import kotlin.concurrent.thread
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ThreeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ThreeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var itemAdapter: ItemAdapter
+    val items = mutableListOf<Item>()
+    val buttonMap: MutableMap<String, MutableList<Button>> = mutableMapOf()
+    val filter: MutableMap<String, MutableSet<String>> = mutableMapOf()
+    private lateinit var binding: FragmentThreeBinding
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_three, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ThreeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ThreeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val id = data?.getStringExtra("id")?.toInt()
+                id?.let {
+                    // id를 기반으로 뷰페이저 페이지를 변경
+                    if (id > -1) (activity as? MainActivity)?.changeViewPagerPage(it)
                 }
             }
+        }
+        val id = (activity as MainActivity).getID()
+        binding = FragmentThreeBinding.inflate(inflater, container, false)
+        recyclerView = binding.recyclerViewSearch
+        recyclerView.layoutManager = GridLayoutManager(context, 2)
+        itemAdapter = ItemAdapter(items,3,resultLauncher,id)
+        recyclerView.adapter = itemAdapter
+        val kindview=arrayOf<LinearLayout> (binding.kindview1,binding.kindview2,binding.kindview3,binding.kindview4,binding.kindview5)
+
+        val filterButton = arrayOf<Array<String>>(
+            arrayOf<String>("전체","남자","여자"),
+            arrayOf<String>("전체","상의","바지","아우터","신발","가방","모자"),
+            arrayOf<String>("전체","검정", "흰", "빨강", "파랑", "노랑", "초록"),
+            arrayOf<String>("전체","높음", "중간", "낮음"),
+            arrayOf<String>("인기순","낮은 가격순","높은 가격순"),)
+
+        val groups = arrayOf<String>("gender","kind","color","pRange","sort")
+        var i = 0
+        for (ll in kindview) {
+            for (btnName in filterButton[i]) {
+                ll.addView(createButton(btnName,groups[i]))
+            }
+            i += 1
+        }
+        filter["sort"] = mutableSetOf("인기순") // 정렬 기본값 설정
+
+        var prevSearch = ""
+
+        binding.searchButton.setOnClickListener() {
+            var nowSearch = binding.searchText.text.toString()
+            Log.d("bool",(nowSearch == prevSearch).toString())
+            thread(start=true)
+            {
+                sendSearchRequest(nowSearch == prevSearch)
+                prevSearch = nowSearch
+            }
+            binding.filter.visibility=View.GONE
+            hideKeyboard()
+        }
+        binding.filterButton.setOnClickListener() {
+            if (binding.filter.visibility==View.VISIBLE) {
+                binding.filter.visibility=View.GONE
+            } else {
+                binding.filter.visibility=View.VISIBLE
+            }
+        }
+
+        return binding.root
+    }
+
+    fun hideKeyboard() {
+        val inputMethodManager = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        // Check if no view has focus:
+        val view = activity?.currentFocus ?: View(context)
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    val similarityMap = mapOf(
+        "검은색" to "검정",
+        "검은" to "검정",
+        "검정색" to "검정",
+        "남성" to "남자",
+        "여성" to "여자",
+        "팬츠" to "바지",
+        "흰색" to "흰",
+        "블랙" to "검정",
+        "화이트" to "흰",
+        "블루" to "파랑",
+        "레드" to "빨강"
+        //... add other similar words
+    )
+
+    val fieldsValues = mapOf(
+        "gender" to listOf("전체","남자","여자"),
+        "kind" to listOf("전체","상의","바지","아우터","신발","가방","모자"),
+        "color" to listOf("전체","검정", "흰", "빨강", "파랑", "노랑", "초록"),
+        "pRange" to listOf("전체","High", "Mid", "Low")
+    )
+
+    val sorts = listOf("인기순", "낮은 가격순", "높은 가격순")
+
+    fun makeQuery(inputText: String, isSame: Boolean): JSONObject {
+        val words = inputText.split(" ").toMutableList()
+        val query = JSONObject()
+        val wordsCopy = ArrayList(words)
+        Log.d("word",words.toString())
+        for (word in wordsCopy) {
+            val realWord = similarityMap[word] ?: word
+            for ((field, values) in fieldsValues) {
+                if (values.contains(realWord)) {
+                    val array = query.optJSONArray(field) ?: JSONArray()
+                    array.put(realWord)
+                    query.put(field, array)
+                    words.remove(word)
+                    break
+                }
+            }
+        }
+        Log.d("word",words.toString())
+        val remainingWords = words.joinToString(" ")
+        if (remainingWords.isNotBlank()) {
+            query.put("name", remainingWords)
+        }
+
+        for ((field, values) in filter) {
+            if (isSame || field == "sort") {
+                var array = query.optJSONArray(field) ?: JSONArray()
+                if (values.contains("전체")) {
+                    array = JSONArray(mutableListOf("전체"))
+                } else {
+                    for (value in values) {
+                        if (!array.toString().contains(value)) {
+                            array.put(value)
+                        }
+                    }
+                }
+                query.put(field, array)
+            }
+        }
+
+        // If there's no remaining words (i.e., the search query is empty), remove the "name" key from the query
+        if (remainingWords.isBlank()) {
+            query.remove("name")
+        }
+
+        Log.d("QUERY", query.toString())
+        return query
+    }
+
+
+    fun sendSearchRequest(isSame : Boolean) {
+        if(!isSame) {
+            // 모든 필터를 비웁니다.
+            filter.clear()
+
+            // 모든 버튼의 색깔을 회색으로 변경합니다.
+            for ((_, buttons) in buttonMap) {
+                buttons.forEach { it.isSelected = false }
+            }
+            filter["sort"] = mutableSetOf("인기순")
+            buttonMap["sort"]?.find { it.text == "인기순" }?.isSelected = true
+        }
+        val query = makeQuery(binding.searchText.text.toString(), isSame)
+        changeButton(query)
+        serverCommu.sendRequest(query, "search", {result ->
+            Log.d("Result","${result}")
+            val json = result
+            items.clear()
+            val jsonArray = JSONArray(json)
+            var pgnum = 1
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObj = jsonArray.getJSONObject(i)
+                items.add(
+                    Item(
+                        id = jsonObj.getInt("id"),
+                        name = jsonObj.getString("name"),
+                        brand = jsonObj.getString("brand"),
+                        price = jsonObj.getInt("price"),
+                        imgUrl = jsonObj.getString("imageUrl"),
+                        color=jsonObj.getString("color"),
+                        rank=20*(pgnum-1)+i+1
+                    )
+                )
+            }
+            requireActivity().runOnUiThread{
+                itemAdapter.notifyDataSetChanged()
+                recyclerView.scrollToPosition(0)
+            }
+        }, {result ->
+            Log.d("Result","${result}")
+        })
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val id = (activity as MainActivity).getID()
+        val gender=(activity as MainActivity).getgender()
+//        view.findViewById<Button>(R.id.btngendertoggle).text=gender
+//        thread(start=true)
+//        {
+//            requestRanking(id,gender)
+//        }
+    }
+
+
+    fun createButton(name: String, group: String): Button {
+        val btn = Button(context)
+        btn.text = name
+        btn.setBackgroundResource(R.drawable.round_button)
+        btn.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        (btn.layoutParams as LinearLayout.LayoutParams).setMargins(0,0,20,0)
+        if (btn.text == "인기순") btn.isSelected = true
+        btn.setOnClickListener {
+            val button = it as Button
+            var currentList = filter[group] ?: mutableSetOf()
+            val currentButtonList = buttonMap[group] ?: mutableListOf()
+            if (group == "sort") {
+                if (!currentList.contains(name)) {
+                    currentList.clear()
+                    currentList.add(name)
+                    currentButtonList.forEach { if(it.text == name) it.isSelected=true else it.isSelected=false}
+                }
+            } else {
+                if (name == "전체") {
+                    if (currentList.contains("전체")) {
+                        // "전체" 버튼이 눌려있을 경우 필터를 비우고 버튼 색상을 초기화합니다.
+                        currentList.clear()
+                        currentButtonList.forEach { it.isSelected=false}
+                    } else {
+                        // "전체" 버튼이 눌리지 않은 경우 필터를 "전체"로 설정하고 버튼 색상을 바꿉니다.
+                        currentList.clear()
+                        currentList.add("전체")
+                        currentButtonList.forEach { it.isSelected=true }
+                    }
+                } else {
+                    if (currentList.contains("전체")) {
+                        // "전체" 버튼이 눌려있으면 다른 버튼을 눌렀을 때 "전체"를 필터에서 제거하고, 해당 버튼을 제외한 다른 버튼들을 필터에 추가합니다.
+                        currentList.remove("전체")
+                        currentButtonList.find { it.text == "전체" }?.isSelected=false
+                        for (otherButton in currentButtonList) {
+                            if (otherButton.text != name && otherButton.text != "전체") {
+                                currentList.add(otherButton.text.toString())
+                                otherButton.isSelected = true
+                            }
+                        }
+                        button.isSelected = false
+                        currentButtonList.forEach {if(it.text == "전체") it.isSelected = false}
+                    } else {
+                        if (currentList.contains(name)) {
+                            // 이미 선택된 버튼을 다시 클릭하면 필터에서 해당 항목을 제거하고 버튼 색상을 초기화합니다.
+                            currentList.remove(name)
+                            button.isSelected = false
+                        } else {
+                            // 선택되지 않은 버튼을 클릭하면 필터에 해당 항목을 추가하고 버튼 색상을 바꿉니다.
+                            currentList.add(name)
+                            button.isSelected = true
+                        }
+                    }
+                    // 전체 버튼을 제외한 모든 버튼이 선택되었다면 전체 버튼이 눌려진 것으로 처리합니다.
+                    if (currentButtonList.all { it.text == "전체" || currentList.contains(it.text)}) {
+                        currentList = mutableSetOf("전체")
+                        currentButtonList.forEach { it.isSelected = true}
+                    }
+                }
+                if (currentList.isEmpty()) {
+                    filter.remove(group)
+                } else {
+                    filter[group] = currentList
+                }
+            }
+            Log.d("FILTER",filter.toString())
+        }
+        val currentButtonList = buttonMap[group] ?: mutableListOf()
+        currentButtonList.add(btn)
+        buttonMap[group] = currentButtonList
+        return btn
+    }
+
+    fun changeButton(newFilter: JSONObject) {
+        val map: MutableMap<String, MutableSet<String>> = mutableMapOf()
+        val keys: Iterator<String> = newFilter.keys()
+        for (key in keys) {
+            val values = newFilter.optJSONArray(key)
+            val list = mutableSetOf<String>()
+            if (values != null) {
+                // 값이 JSONArray일 경우
+                for (i in 0 until values.length()) {
+                    list.add(values.getString(i))
+                }
+            } else {
+                // 값이 문자열일 경우
+                list.add(newFilter.getString(key))
+            }
+            map[key] = list
+        }
+        for ((group, values) in map) {
+            if (group == "name") continue
+            filter[group] = values.toList().toMutableSet()
+            // 이제 필터가 변경되었으므로, 버튼의 색상도 업데이트해야 합니다.
+            val currentButtonList = buttonMap[group] ?: mutableListOf()
+            for (button in currentButtonList) {
+                if (values.contains(button.text.toString())) {
+                    button.isSelected = true
+                } else {
+                    button.isSelected = false
+                }
+            }
+        }
+        for ((group, buttons) in buttonMap) {
+            if (!newFilter.has(group)) {
+                buttons.forEach { it.isSelected = false }
+            }
+        }
+        //TODO: 전체가 포함되면 싹다 색칠, 싹다 색칠되면 전체로 변경
     }
 }

@@ -1,16 +1,23 @@
 package com.KAPO.madstyles
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.KAPO.madstyles.FiveFragment
 import com.KAPO.madstyles.FourFragment
 import com.KAPO.madstyles.OneFragment
@@ -28,20 +35,31 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import com.kakao.sdk.common.util.Utility
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private var initTime = 0L
     var id: String? = ""
-
+    var gender:String?=""
+    interface MainIdProvider {
+        fun getID(): Int
+    }
     fun getID(): String {
         return id.toString()
     }
-
+    fun getgender(): String {
+        return gender.toString()
+    }
+    fun changeViewPagerPage(index: Int) {
+        binding.viewpager.currentItem = index
+    }
     // 뷰 페이저 어댑터
     class MyFragmentPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
-        val fragments = listOf(OneFragment(), TwoFragment(), ThreeFragment(), FourFragment(), FiveFragment())
+        val fragments =
+            listOf(OneFragment(), TwoFragment(), ThreeFragment(), FourFragment(), FiveFragment())
+
         override fun getItemCount(): Int = fragments.size
         override fun createFragment(position: Int): Fragment = fragments[position]
     }
@@ -49,46 +67,69 @@ class MainActivity : AppCompatActivity() {
     fun tabSetting(tab: TabLayout.Tab, position: Int) {
         if (position == 0) {
             tab.text = "Home"
-//            tab.setIcon(R.drawable.contacts_icon)
+            tab.setIcon(R.drawable.icon_home)
         } else if (position == 1) {
-            tab.text = "Lank"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.text = "Rank"
+            tab.setIcon(R.drawable.icon_rank)
         } else if (position == 2) {
             tab.text = "Search"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.setIcon(R.drawable.icon_search)
         } else if (position == 3) {
             tab.text = "Cart"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.setIcon(R.drawable.icon_cart)
         } else {
             tab.text = "My"
-//            tab.setIcon(R.drawable.gpt_icon)
+            tab.setIcon(R.drawable.icon_my)
         }
 
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //TODO: 자동로그인 여부 확인
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivityForResult(intent,10)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.viewpager.adapter = MyFragmentPagerAdapter(this)
+        if(!intent.getBooleanExtra("Loginagain",false)) {
+            binding.tabs.visibility=View.GONE
+            Handler(Looper.getMainLooper()).postDelayed({
+                binding.imageView.visibility= View.GONE
+                binding.tabs.visibility=View.VISIBLE
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivityForResult(intent, 10)
 
-        TabLayoutMediator(binding.tabs,binding.viewpager){
-                tab, position-> tabSetting(tab, position)
-        }.attach()
+            },3000)
+        }
+        else
+        {
+            binding.imageView.visibility= View.GONE
+            id = intent.getStringExtra("id")
+            gender=intent.getStringExtra("gender")
+            binding.viewpager.adapter = MyFragmentPagerAdapter(this)
+            TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
+                tabSetting(tab, position)
+            }.attach()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 10 && resultCode === Activity.RESULT_OK) {
+        if (requestCode == 10 && resultCode === Activity.RESULT_OK) {
             id = data?.getStringExtra("id")
+            gender=data?.getStringExtra("gender")
+            binding.viewpager.adapter = MyFragmentPagerAdapter(this)
+            TabLayoutMediator(binding.tabs, binding.viewpager) { tab, position ->
+                tabSetting(tab, position)
+            }.attach()
+        }
+        else if(requestCode==4)
+        {
+            Toast.makeText(this,"이미지를 불러왔습니다",Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
 //            val fragment = (binding.viewpager.adapter as MyFragmentPagerAdapter).fragments[binding.viewpager.currentItem]
 //            if (fragment is OneFragment) {
 //                if(fragment.backButtonPressed()==1) return true
@@ -96,18 +137,22 @@ class MainActivity : AppCompatActivity() {
 //            else if (fragment is TwoFragment) {
 //                if(fragment.backButtonPressed()==1) return true
 //            }
-            if(System.currentTimeMillis() - initTime > 3000){
-                Toast.makeText(this, "종료하려면 한번 더 누르세요!",
-                    Toast.LENGTH_SHORT).show()
+            if (System.currentTimeMillis() - initTime > 3000) {
+                Toast.makeText(
+                    this, "종료하려면 한번 더 누르세요!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 initTime = System.currentTimeMillis()
                 return true // 키 이벤트 무시
-            }
-            else
-            {
+            } else {
                 ActivityCompat.finishAffinity(this)
                 System.exit(0)
             }
         }
         return super.onKeyDown(keyCode, event) // 키 이벤트 처리
+    }
+
+    override fun onBackPressed() {
+
     }
 }

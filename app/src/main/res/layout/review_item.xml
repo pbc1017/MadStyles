@@ -16,29 +16,42 @@
             android:textSize="16sp"
             android:textStyle="bold"/>
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text=" - "/>
+
+        <TextView
+            android:id="@+id/rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5"
+            android:textColor="@color/button1"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="점"
+            android:textColor="@color/button1"/>
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
         <Button
             android:id="@+id/review_edit_button"
+            android:foreground="@drawable/icon_button_modify"
             android:layout_width="50dp"
             android:layout_height="30dp"
-            android:textSize="10sp"
-            android:text="수정"/>
+            android:background="@android:color/transparent"
+            android:textSize="10sp"/>
     </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/rating"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginTop="4dp"/>
 
     <TextView
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginTop="5dp"/>
 </LinearLayout>

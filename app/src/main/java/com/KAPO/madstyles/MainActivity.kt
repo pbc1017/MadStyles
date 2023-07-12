@@ -67,19 +67,19 @@ class MainActivity : AppCompatActivity() {
     fun tabSetting(tab: TabLayout.Tab, position: Int) {
         if (position == 0) {
             tab.text = "Home"
-//            tab.setIcon(R.drawable.contacts_icon)
+            tab.setIcon(R.drawable.icon_home)
         } else if (position == 1) {
             tab.text = "Rank"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.setIcon(R.drawable.icon_rank)
         } else if (position == 2) {
             tab.text = "Search"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.setIcon(R.drawable.icon_search)
         } else if (position == 3) {
             tab.text = "Cart"
-//            tab.setIcon(R.drawable.gallery_icon)
+            tab.setIcon(R.drawable.icon_cart)
         } else {
             tab.text = "My"
-//            tab.setIcon(R.drawable.gpt_icon)
+            tab.setIcon(R.drawable.icon_my)
         }
 
     }

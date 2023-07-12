@@ -120,6 +120,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
         <LinearLayout
+            android:id="@+id/createAdded"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -158,6 +159,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:text="성별"/>
                     <HorizontalScrollView
                         android:layout_width="0dp"
@@ -180,6 +182,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:text="선호 스타일"/>
                     <HorizontalScrollView
                         android:layout_width="0dp"
@@ -203,6 +206,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:text="선호 색상" />
                     <HorizontalScrollView
                         android:layout_width="0dp"
@@ -224,6 +228,7 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:layout_gravity="center_vertical"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="선호 가격대" />
@@ -251,10 +256,15 @@
                     android:layout_weight="1"/>
                 <Button
                     android:id="@+id/btncreateaccount"
-                    android:gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Confirm"/>
+                    android:text="확인"/>
+                <Button
+                    android:id="@+id/btncreateback"
+                    android:layout_marginLeft="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="취소"/>
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

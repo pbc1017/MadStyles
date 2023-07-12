@@ -17,6 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.marginLeft
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
@@ -83,9 +84,14 @@ class LoginActivity : AppCompatActivity() {
 
         }
         binding.btnShowselection.setOnClickListener{
+            binding.createAdded.visibility = View.VISIBLE
             binding.prefer.visibility= View.VISIBLE
             binding.btncreateaccount.visibility=View.VISIBLE
             binding.kakaonickname.visibility=View.GONE
+        }
+
+        binding.btncreateback.setOnClickListener() {
+            binding.createAdded.visibility = View.GONE
         }
         binding.btncreateaccount.setOnClickListener {
             if(kakaoid=="") {//normal login
@@ -162,6 +168,7 @@ class LoginActivity : AppCompatActivity() {
                                 this.runOnUiThread {
                                     Toast.makeText(this, "회원 가입을 진행합니다", Toast.LENGTH_SHORT).show()
                                     binding.prefer.visibility = View.VISIBLE
+                                    binding.createAdded.visibility = View.VISIBLE
                                     binding.btncreateaccount.visibility = View.VISIBLE
                                     binding.kakaonickname.visibility = View.VISIBLE
                                 }
@@ -381,7 +388,8 @@ class LoginActivity : AppCompatActivity() {
         btn.text = name
         btn.layoutParams =
             LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        btn.setBackgroundColor(Color.GRAY) // 기본 버튼 색상
+        (btn.layoutParams as LinearLayout.LayoutParams).setMargins(10,0,0,0)
+        btn.setBackgroundResource(R.drawable.round_button)
         btn.setOnClickListener {
             val button = it as Button
             var currentList = prefer[group] ?: mutableListOf()
@@ -389,7 +397,7 @@ class LoginActivity : AppCompatActivity() {
             if (!currentList.contains(name)) {
                 currentList.clear()
                 currentList.add(name)
-                currentButtonList.forEach { if(it.text == name) it.setBackgroundColor(Color.WHITE) else it.setBackgroundColor(Color.GRAY)}
+                currentButtonList.forEach { if(it.text == name) it.isSelected = true else it.isSelected = false}
             }
             if (currentList.isEmpty()) {
                 prefer.remove(group)

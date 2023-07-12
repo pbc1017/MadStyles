@@ -252,6 +252,9 @@ class DetailActivity : AppCompatActivity() {
                 itemJson.put("count",binding.count.text.toString().toInt())
                 json.put("item",itemJson)
                 requestCart(json)
+                thread(start=true) {
+                    requestAIimage(userId,itemId)
+                }
                 binding.buyDetail.visibility=View.GONE
                 binding.addCartButton.visibility=View.GONE
                 Toast.makeText(this, "장바구니에 상품을 담았습니다.",Toast.LENGTH_SHORT)
@@ -329,6 +332,20 @@ class DetailActivity : AppCompatActivity() {
                 Log.d("Result", "${result}")
             })
         }
+    }
+    private fun requestAIimage(userid:String,itemid:Int)
+    {
+        val json=JSONObject().apply{
+            put("user",userid)
+            put("item",itemid)
+        }
+        serverCommu.sendRequest(json,"createaiimage",{result->
+            this.runOnUiThread {
+                //Toast.makeText(,"${result} created!",Toast.LENGTH_SHORT).show()
+            }
+        },
+            {result ->
+            Log.d("Result", "${result}")})
     }
     private fun requestCart(json:JSONObject) {
         thread(start = true)

@@ -34,55 +34,51 @@ targetSdkVersion 33
 
 ### c. 어플리케이션 소개
 
-### 0.MainActivity
+### 0.Login
 
 ***Major features***
 
-- splash 화면을 구현하였습니다
-- 화면에서 스와이프를 하면 다른 탭으로 view가 전환됩니다
-- 또는 아래쪽의 탭을 눌러 view를 전환할 수 있습니다
+- 쇼핑 앱에 어울리는 SplashScreen이 적용되어 있습니다.
+- 일반 로그인 외 Kakao 로그인이 가능합니다. 이 경우 별도 닉네임을 설정할 수 있습니다.
+- 새 계정을 만들때 사용자의 성별과 선호 항목(스타일, 색상, 가격대)을 설정할 수 있습니다.
 
 ---
 
 ***기술설명***
 
-- ViewPager2와 TabLayout을 사용하여 스와이프를 통해 탭이 자연스럽게 전환될 수 있도록 하였습니다.
-- 스플래시 구현을 위해 액티비티 간의 전환을 처리하였으며, 시작 액티비티를 메인액티비티에서 스플래시액티비티로 전환했습니다.
-- splash 구현에서 objectAnimator를 사용하여 두 개의 이미지를 좌우에서 날아오게 애니메이션을 처리하였습니다
-- Handler를 이용해 일정시간 지연 후 작업이 실행되게 하였습니다.
+- Mainactivity에서 ```startActivityForResuilt```를 통해 바로 LoginActivity로 넘어옵니다. 
+- splash 구현은 MainActivity에서 imageView의 Visibility를 조절하는 방식을 사용했습니다.
+- Handler를 이용해 일정시간 지연 후 로그인 화면이 실행되게 하였습니다.
+- Kakao 로그인의 경우 Token에서 회원 고유 ID를 얻어 처리합니다.
 - 앱에서 사용하는 모든 이미지 소스는 xml과 피그마, PPT, 포토샵을 이용해 직접 제작했으며, 이를 통해 일관된 디자인을 구현하였습니다.
 
 ---
 
 ### TAB 1 - HOME
 
+<img src="https://github.com/pbc1017/MadStyles/assets/20718582/40608ff9-e950-4067-8eab-c8f0bce69a0f" width="400" height="700"/>
 
 ***Major features***
 
-- initial의 자음으로 그룹별로 연락처에 나타납니다.
-- 우측 상단에 Add Contact 버튼을 클릭하여 연락처를 추가할 수 있는 화면으로 이동할 수 있습니다.
-- 연락처를 클릭하면 상세 정보창으로 이동할 수 있습니다.
-- 상세정보창에서 이메일, 전화, 메세지 버튼을 누르면 해당 기능을 수행할 수 있습니다.
-- search contacts에서 찾고자 하는 연락처를 filtering 할 수 있습니다.
-- 연락처를 길게 누를시에 삭제할 수 있습니다.
+- 사용자 정보를 바탕으로 총 3가지 Concept의 추천을 표시합니다.
+- 각 아이템을 눌러 상세 정보를 볼 수 있습니다.
 
 ---
 
 ***기술설명***
 
-- RecyclerView를 사용하여 목록 형태의 인터페이스를 구현했습니다.
-- intent를 이용해 핸드폰의 연락처 앱에서 이름, 전화번호, 이메일을 불러왔습니다.
-- intent를 이용해 전화, 문자, 이메일 버튼을 눌렀을때 해당 연락처의 정보가 바로 입력될 수 있도록 했습니다.
-- 연락처 삭제를 구현하기 위해 전역변수를 선언하여 삭제된 연락처를 저장했습니다.
-
+- Mainactivity에 진입할때 사용자 id를 body에 담아 서버에 post 요청을 합니다.
+- 서버에서는 특정 조건에 맞는 아이템을 뽑은 후, 랜덤으로 10개씩을 반환합니다.
+- 앱에서 서버로의 요청은 
 ---
 
 ### TAB 2 - Ranking
 
+<img src="https://github.com/pbc1017/MadStyles/assets/20718582/fe904c9c-df8e-453c-b85d-22e6e9045971" width="400" height="700"/>
 
 ***Major features***
 
-- local 이미지가 기본적으로 화면에 나타납니다
+- 판매량을 기준으로 1위부터 한 페이지에 20개씩 상품을 표시해줍니다.
 - 오른쪽위의 Add Image를 누르면 카메라와 갤러리 팝업창이 뜹니다
 - 갤러리를 누르고 사진을 선택하면 해당 사진이 추가됩니다
 - 카메라를 누르고 사진을 촬영후 확인을 누르면 해당 사진이 추가됩니다
@@ -104,6 +100,8 @@ targetSdkVersion 33
 
 ### TAB 3 - Search
 
+<img src="https://github.com/pbc1017/MadStyles/assets/20718582/e5dd7c2c-f22d-433c-8067-b745be0e96bb" width="400" height="700"/>
+<img src="https://github.com/pbc1017/MadStyles/assets/20718582/b83f4866-b2af-4ba4-a145-d36c80f2eec5" width="400" height="700"/>
 
 ***Major features***
 

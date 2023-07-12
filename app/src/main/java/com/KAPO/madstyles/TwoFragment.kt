@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.DecimalFormat
 import kotlin.concurrent.thread
 
 data class Item(
@@ -64,7 +65,7 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val 
         holder.rank.text=item.rank.toString()
         holder.name.text = item.name
         holder.brand.text = item.brand
-        holder.price.text = item.price.toString()+"원"
+        holder.price.text = DecimalFormat("#,###").format(item.price.toString().toInt())
         Glide.with(holder.image.context)
             .load(item.imgUrl)
             .into(holder.image)
@@ -72,7 +73,7 @@ class ItemAdapter(private val items: MutableList<Item>,index:Int=2, private val 
         {
             val lp=holder.itemView.layoutParams
             lp.width=500
-            lp.height=1000
+            lp.height=790
             holder.rank.visibility=View.GONE
         }
         holder.itemView.setOnClickListener() {

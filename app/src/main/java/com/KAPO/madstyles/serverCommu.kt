@@ -16,7 +16,7 @@ class serverCommu {
 //            val url = "http://143.248.226.47:80/${api}"
          //   val url = "http://143.248.193.110:80/${api}"
            // val url = "http://172.20.31.68:80/${api}"
-            val url="https://d391-192-249-19-234.ngrok-free.app/${api}"
+            val url="http://143.248.226.88:80/${api}"
             val okHttpClient= OkHttpClient()
             val body= JSONobj.toString().toRequestBody("application/json".toMediaType())
             val req=okhttp3.Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","123").post(body).build()

@@ -54,13 +54,13 @@ class OneFragment : Fragment() {
             }
         }
 
-        binding.txtrecommend1.text="${id}에게 추천하는 ${gender}아이템"
+        binding.txtrecommend1.text="${id}님에게 추천하는 ${gender}아이템"
         itemAdapter1= ItemAdapter(items[0],1, resultLauncher, id)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).adapter=itemAdapter1
         val linmanager1=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_1).layoutManager=linmanager1
 
-        binding.txtrecommend2.text="${id}의 취향에 따른 추천 아이템"
+        binding.txtrecommend2.text="${id}님의 취향에 따른 추천 아이템"
         itemAdapter2=ItemAdapter(items[1],1,resultLauncher, id)
         val linmanager2=LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
         view.findViewById<RecyclerView>(R.id.recommend_view_2).adapter=itemAdapter2

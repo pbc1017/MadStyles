@@ -213,12 +213,19 @@ class FourFragment : Fragment() {
             Log.d("Err:","${result}")
         })
     }
+    fun getTotal()
+    {
+        total=0
+        for(i in 0 until items.size){
+            total+=items[i].price*counts[i]
+        }
+    }
 
     override fun onResume() {
         super.onResume()
-        //val id=(activity as MainActivity).getID()
-        //if(id!="")
-        //    requestCart(id)
+        val id=(activity as MainActivity).getID()
+        if(id!="")
+            requestCart(id)
     }
 }
 
@@ -244,7 +251,7 @@ class CartItemAdapter(private val items: MutableList<Item>,private val counts:Mu
         val item = items[position]
         holder.name.text = item.name
         holder.brand.text = item.brand
-        holder.price.text = item.price.toString()+"원"
+        holder.price.text = (item.price*counts[position]).toString()+"원"
         Glide.with(holder.image.context)
             .load(item.imgUrl)
             .into(holder.image)

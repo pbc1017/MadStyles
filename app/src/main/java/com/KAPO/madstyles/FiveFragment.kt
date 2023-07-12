@@ -126,9 +126,11 @@ class FiveFragment : Fragment() {
                                 rank=jsonObj.getInt("rank")
                             )
                         )
+                        items.reverse()
                     }
                     requireActivity().runOnUiThread{
                         binding.recentView.adapter?.notifyDataSetChanged()
+                        binding.recentView.scrollToPosition(0)
                     }
                 }, {result ->
                     Log.d("Result","${result}")
@@ -138,6 +140,7 @@ class FiveFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onResume() {
         super.onResume()
         if(id!="")

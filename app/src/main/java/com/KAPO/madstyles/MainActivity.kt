@@ -120,6 +120,10 @@ class MainActivity : AppCompatActivity() {
                 tabSetting(tab, position)
             }.attach()
         }
+        else if(requestCode==4)
+        {
+            Toast.makeText(this,"이미지를 불러왔습니다",Toast.LENGTH_SHORT).show()
+        }
     }
 
 
